@@ -11,7 +11,7 @@
     <releaseinfo>
       for LunarCalendar &version;
       The latest version of this documentation can be found on-line at
-      <ulink role="online-location" url="http://[SERVER]/lunar-calendar/index.html">http://[SERVER]/lunar-calendar/</ulink>.
+      <ulink role="online-location" url="http://liblunar.googlecode.com/svn/docs/lunar-calendar/index.html">http://liblunar.googlecode.com/svn/docs/lunar-calendar/</ulink>. 
     </releaseinfo>
   </bookinfo>
 
