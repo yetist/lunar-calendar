@@ -86,7 +86,7 @@ synchtml:
 	modname=lunar-calendar3; \
 		svnroot="https://liblunar.googlecode.com/svn/docs/lunar-calendar3"; \
 		tmpdir=tmp/svndocs; \
-		if [ -d $$tmpdir ];then \
+		if [ -d $$tmpdir/$$modname ];then \
 		svn update $$tmpdir/$$modname; \
 		else \
 		mkdir -p $$tmpdir; \
