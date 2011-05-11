@@ -19,19 +19,15 @@ AC_CONFIG_SRCDIR(lunar-calendar/lunar-calendar.c)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
-dnl for so version.
-LT_CURRENT=lunar_calendar_lt_current
-LT_REVISION=lunar_calendar_lt_revision
-LT_AGE=lunar_calendar_lt_age
-AC_SUBST(LT_CURRENT)
-AC_SUBST(LT_REVISION)
-AC_SUBST(LT_AGE)
+LT_VERSION_INFO="lunar_calendar_lt_current:lunar_calendar_lt_revision:lunar_calendar_lt_age"
+LT_CURRENT_MINUS_AGE=m4_eval(lunar_calendar_lt_current - lunar_calendar_lt_age)
+AC_SUBST(LT_VERSION_INFO)
+AC_SUBST(LT_CURRENT_MINUS_AGE)
 
 LUNAR_CALENDAR_VERSION=lunar_calendar_version
+LUNAR_CALENDAR_BINARY_AGE=lunar_calendar_binary_age
 AC_SUBST(LUNAR_CALENDAR_VERSION)
-
-LIBTOOL_EXPORT_OPTIONS='-export-symbols-regex "^lunar.*"'
-AC_SUBST(LIBTOOL_EXPORT_OPTIONS)
+AC_SUBST(LUNAR_CALENDAR_BINARY_AGE)
 
 AM_MAINTAINER_MODE
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -55,6 +51,46 @@ AC_SUBST(ACLOCAL_AMFLAGS, "$ACLOCAL_FLAGS -I m4")
 GOBJECT_INTROSPECTION_CHECK([0.6.7])
 
 AC_PATH_PROG(GLIB_MKENUMS, glib-mkenums)
+
+dnl ================================================================
+dnl check for win32 build
+dnl ================================================================
+AC_MSG_CHECKING([for some Win32 platform])
+case "$host" in
+  *-*-mingw*|*-*-cygwin*)
+    platform_win32=yes
+    os_win32=yes
+    ;;
+  *)
+    platform_win32=no
+    os_win32=no
+    ;;
+esac
+AC_MSG_RESULT([$platform_win32])
+AM_CONDITIONAL(PLATFORM_WIN32, test "$platform_win32" = "yes")
+
+AM_CONDITIONAL(OS_WIN32, test "$os_win32" = "yes")
+AM_CONDITIONAL(OS_UNIX, test "$os_win32" != "yes")
+
+#LIBTOOL_EXPORT_OPTIONS='-export-symbols-regex "^lunar.*"'
+if test "$os_win32" != yes; then
+    # libtool option to control which symbols are exported
+    # right now, symbols starting with _ are not exported
+    LIBTOOL_EXPORT_OPTIONS='-export-symbols-regex "^[[^_]].*"'
+else
+    # We currently use .def files on Windows (for lunar-calendar)
+    LIBTOOL_EXPORT_OPTIONS=
+fi
+AC_SUBST(LIBTOOL_EXPORT_OPTIONS)
+
+if test "$os_win32" = "yes"; then
+  AC_CHECK_TOOL(WINDRES, windres, no)
+  if test "$WINDRES" = no; then
+    AC_MSG_ERROR([*** Could not find an implementation of windres in your PATH.])
+  fi
+  AC_CHECK_PROG(ms_librarian, lib.exe, yes, no)
+fi
+AM_CONDITIONAL(MS_LIB_AVAILABLE, test x$ms_librarian = xyes)
 
 dnl ================================================================
 dnl  Language Support 
@@ -117,6 +153,7 @@ AC_SUBST(HAVE_VALA)
 
 AC_CONFIG_FILES([
 lunar-calendar-3.0.pc
+lunar-calendar/lunar-calendar-win32.rc
 lunar-calendar/Makefile
 tests/Makefile
 po/Makefile.in
