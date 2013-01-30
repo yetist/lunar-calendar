@@ -1,6 +1,6 @@
 NULL=
 
-INCLUDES =                                              \
+AM_CPPFLAGS =                                              \
 	-I$(top_srcdir)					\
 	-I$(top_srcdir)/lunar-calendar			\
         -I$(srcdir) 					\
@@ -10,11 +10,6 @@ INCLUDES =                                              \
 noinst_PROGRAMS = test-calendar
 
 test_calendar_SOURCES =  test-calendar.c
-
-AM_CPPFLAGS =                		\
-        -I.                  		\
-        -I$(top_srcdir)      		\
-        $(LUNAR_CALENDAR_CFLAGS) 
 
 LIBS =                       		\
         $(LUNAR_CALENDAR_LIBS)       		\

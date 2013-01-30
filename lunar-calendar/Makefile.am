@@ -1,6 +1,6 @@
 CLEANFILES =
 
-INCLUDES =                                              \
+AM_CPPFLAGS =                                              \
 	-I$(top_srcdir)					\
         -I$(srcdir) 					\
 	$(LUNAR_CALENDAR_CFLAGS)				\

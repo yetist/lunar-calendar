@@ -14,8 +14,9 @@ lunar-calendar-3.0.vapi: $(top_builddir)/lunar-calendar/LunarCalendar-3.0.gir
 		$< \
 		$(NULL)
 	@mv $@ lunar-calendar-3.0.vapi.tmp1
-	$(AM_V_GEN)sed -e \
-                 's#LunarCalendar-3.0.h#lunar-calendar/lunar-calendar.h#' \
+	$(AM_V_GEN)sed \
+                 -e 's#LunarCalendar-3.0.h#lunar-calendar/lunar-calendar.h#' \
+                 -e 's#namespace Lunar #namespace LunarCalendar #' \
                  < lunar-calendar-3.0.vapi.tmp1 > $@
 	@rm lunar-calendar-3.0.vapi.tmp*
 

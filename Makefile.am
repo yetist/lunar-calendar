@@ -1,6 +1,5 @@
-ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = po lunar-calendar tests docs
-ACLOCAL_AMFLAGS = -I m4INTROSPECTION_GIRS
+#ACLOCAL_AMFLAGS = -I m4INTROSPECTION_GIRS
 EXTRA_DIST =                    \
 	lunar-calendar-3.0.pc.in	\
 	sanity_check		\
