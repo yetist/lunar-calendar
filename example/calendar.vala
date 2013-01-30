@@ -15,7 +15,7 @@ static int main (string[] args) {
 
 	var window = new Window (WindowType.TOPLEVEL);
 	window.title = "Lunar Calendar";
-	window.position = WindowPosition.CENTER;
+	//window.position = WindowPosition.CENTER;
 	window.destroy.connect (Gtk.main_quit);
 
 	var calendar = new LunarCalendar.Calendar ();

@@ -16,7 +16,7 @@ AC_COPYRIGHT([Copyright (C) 2007-2011 yetist@gmail.com])
 AM_INIT_AUTOMAKE([1.8 dist-bzip2 no-define -Wno-portability])
 
 AC_CONFIG_SRCDIR(lunar-calendar/lunar-calendar.c)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
 LT_VERSION_INFO="lunar_calendar_lt_current:lunar_calendar_lt_revision:lunar_calendar_lt_age"
