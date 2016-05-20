@@ -23,4 +23,3 @@ TestCalendar.prototype = {
 Gtk.init (null, null);
 var tc = new TestCalendar();
 Gtk.main ();
-

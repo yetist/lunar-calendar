@@ -454,7 +454,7 @@ create_calendar(void)
     calendar_data.settings[i] = 0;
 
   window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-  gtk_window_set_title (GTK_WINDOW (window), "GtkCalendar Example");
+  gtk_window_set_title (GTK_WINDOW (window), "LunarCalendar Example");
   gtk_container_set_border_width (GTK_CONTAINER (window), 12);
   g_signal_connect (window, "destroy",
 		    G_CALLBACK (gtk_main_quit),
