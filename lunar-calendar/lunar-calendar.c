@@ -20,7 +20,7 @@
  * */
 
 #ifdef HAVE_CONFIG_H
-	#include <config.h>
+#include <config.h>
 #endif
 
 #include <glib/gi18n-lib.h>
@@ -35,7 +35,7 @@
  * @Short_description: Chinese Lunar Calendar widget for GTK+
  * @Title: LunarCalendar
  *
- * The #LunarDate provide Chinese lunar Calendar Wieget for GTK+ .
+ * The #LunarCalendar provide Chinese lunar Calendar Wieget for GTK+ .
  */
 
 enum {
@@ -46,12 +46,11 @@ enum {
 	PROP_0,
 };
 
-#define LUNAR_CALENDAR_GET_PRIVATE(obj)  (G_TYPE_INSTANCE_GET_PRIVATE((obj), LUNAR_TYPE_CALENDAR, LunarCalendarPrivate))
-
-struct _LunarCalendarPrivate
+struct _LunarCalendar
 {
+	GtkCalendar object;
 	LunarDate   *date;
-	GdkColor	*color;
+	GdkRGBA     *rgba;
 };
 
 static void lunar_calendar_set_property  (GObject          *object,
@@ -64,13 +63,9 @@ static void lunar_calendar_get_property  (GObject          *object,
 		GParamSpec       *pspec);
 
 static void lunar_calendar_month_changed (GtkCalendar *calendar, gpointer     user_data);
-void  lunar_calendar_day_selected(GtkCalendar *calendar);
-static void lunar_calendar_finalize (GObject *gobject);
-static void lunar_calendar_dispose (GObject *gobject);
 static void lunar_calendar_init_i18n(void);
 
-static gchar*
-calendar_detail_cb (GtkCalendar *gcalendar,
+static gchar* calendar_detail_cb (GtkCalendar *gcalendar,
 		guint        year,
 		guint        month,
 		guint        day,
@@ -78,110 +73,110 @@ calendar_detail_cb (GtkCalendar *gcalendar,
 
 G_DEFINE_TYPE (LunarCalendar, lunar_calendar, GTK_TYPE_CALENDAR);
 
-static void
-lunar_calendar_class_init (LunarCalendarClass *class)
+static gchar *color_to_string (const GdkColor *color)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS (class);
-	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (class);
-	GtkCalendarClass *gcalendar_class = GTK_CALENDAR_CLASS (class);
+	PangoColor pango_color;
 
-	gobject_class->set_property = lunar_calendar_set_property;
-	gobject_class->get_property = lunar_calendar_get_property;
-	//gobject_class->dispose = lunar_calendar_dispose;
-	//gobject_class->finalize = lunar_calendar_finalize;
-	gcalendar_class->day_selected = lunar_calendar_day_selected;
+	pango_color.red = color->red;
+	pango_color.green = color->green;
+	pango_color.blue = color->blue;
 
-	g_type_class_add_private (class, sizeof (LunarCalendarPrivate));
+	return pango_color_to_string (&pango_color);
 }
 
-static void
-lunar_calendar_init (LunarCalendar *calendar)
+static gchar *rgba_to_string (const GdkRGBA *rgba)
 {
-	LunarCalendarPrivate *priv;
+	PangoColor pango_color;
 
-	priv = LUNAR_CALENDAR_GET_PRIVATE (calendar);
-	priv->date = lunar_date_new();
-	priv->color = g_new0(GdkColor, 1);
-	priv->color->red = 0x0;
-	priv->color->green = 0x0;
-	priv->color->blue = 0xffff;
+	pango_color.red = 0xffff * rgba->red;
+	pango_color.green = 0xffff * rgba->green;
+	pango_color.blue = 0xffff * rgba->blue;
+
+	return pango_color_to_string (&pango_color);
+}
+
+static void lunar_calendar_dispose (GObject *gobject)
+{
+	LunarCalendar *calendar;
+
+	calendar = LUNAR_CALENDAR (gobject);
+
+	if (calendar->date != NULL)
+	{
+		lunar_date_free(calendar->date);
+	}
+
+	if (calendar->rgba != NULL)
+		gdk_rgba_free(calendar->rgba);
+	G_OBJECT_CLASS (lunar_calendar_parent_class)->dispose(gobject);
+}
+
+void  lunar_calendar_day_selected(GtkCalendar *gcalendar)
+{
+	guint year, month, day;
+	LunarDate *lunar;
+	GError *error = NULL;
+	LunarCalendar *calendar;
+	gchar *holiday, *format, *strtime, *color;
+
+	calendar = LUNAR_CALENDAR(gcalendar);
+
+	if (getenv("LUNAR_CALENDAR_IGNORE_NON_CHINESE") != NULL)
+	{
+		const gchar* const * langs =  g_get_language_names();
+
+		if (langs[0] && langs[0][0] != '\0')
+			if (!g_str_has_prefix(langs[0], "zh_")) {
+				g_object_set (gcalendar, "show-details", FALSE, NULL);
+				return;
+			}
+	}
+
+	gtk_calendar_get_date(gcalendar, &year, &month, &day);
+	lunar_date_set_solar_date(calendar->date, year, month + 1, day, 3, &error);
+	if (error != NULL) {
+		g_clear_error (&error);
+		return;
+	}
+
+	color = rgba_to_string(calendar->rgba);
+	holiday = lunar_date_get_holiday(calendar->date, "\n");
+	format = g_strdup_printf("%s\n%s\n%s\n%s\n<span color=\"%s\">%s</span>",
+			_("%(year)-%(month)-%(day)"),
+			_("%(YUE)%(RI)"),
+			_("%(Y60)%(M60)%(D60)"),
+			_("%(shengxiao)"),
+			color,
+			holiday);
+	strtime = lunar_date_strftime(calendar->date, format);
+	g_free(color);
+	g_free(holiday);
+	g_free(format);
+
+	gtk_widget_set_tooltip_markup(GTK_WIDGET(gcalendar), strtime);
+	g_free(strtime);
+}
+
+static void lunar_calendar_class_init (LunarCalendarClass *class)
+{
+	GObjectClass *gobject_class = G_OBJECT_CLASS (class);
+	GtkCalendarClass *gcalendar_class = GTK_CALENDAR_CLASS (class);
+
+	gobject_class->dispose = lunar_calendar_dispose;
+	gcalendar_class->day_selected = lunar_calendar_day_selected;
+	gtk_widget_class_set_css_name (GTK_WIDGET_CLASS(class), "calendar");
+}
+
+static void lunar_calendar_init (LunarCalendar *calendar)
+{
+	calendar->date = lunar_date_new();
+	gdk_rgba_parse(calendar->rgba, "rgba(0,0,255,1)");
 
 	/* FIXME: here we can setup the locale info, but it looks like not a good idea */
 	lunar_calendar_init_i18n();
 
 	if (gtk_calendar_get_display_options(GTK_CALENDAR(calendar)) & GTK_CALENDAR_SHOW_DETAILS)
 		gtk_calendar_set_detail_func (GTK_CALENDAR (calendar), calendar_detail_cb, calendar, NULL);
-}
-
-static void
-lunar_calendar_finalize (GObject *gobject)
-{
-	LunarCalendar *calendar;
-
-	calendar = LUNAR_CALENDAR (gobject);
-	lunar_date_free(calendar->priv->date);
-	gdk_color_free(calendar->priv->color);
-
-	G_OBJECT_CLASS (lunar_calendar_parent_class)->finalize(gobject);
-}
-
-static void
-lunar_calendar_dispose (GObject *gobject)
-{
-	LunarCalendar *calendar;
-
-	calendar = LUNAR_CALENDAR (gobject);
-
-  if (calendar->priv->date)
-    {
-      g_object_unref (calendar->priv->date);
-      calendar->priv->date = NULL;
-    }
-  if (calendar->priv->color)
-    {
-      g_object_unref (calendar->priv->color);
-	  calendar->priv->color = NULL;
-	}
-
-  G_OBJECT_CLASS (lunar_calendar_parent_class)->dispose(gobject);
-}
-
-static void
-lunar_calendar_set_property (GObject      *object,
-		guint         prop_id,
-		const GValue *value,
-		GParamSpec   *pspec)
-{
-	LunarCalendar *calendar;
-
-	calendar = LUNAR_CALENDAR (object);
-
-	switch (prop_id)
-	{
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-			break;
-	}
-}
-
-static void
-lunar_calendar_get_property (GObject      *object,
-		guint         prop_id,
-		GValue       *value,
-		GParamSpec   *pspec)
-{
-	LunarCalendar *calendar;
-
-	calendar = LUNAR_CALENDAR (object);
-
-	switch (prop_id)
-	{
-
-		default:
-			G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-			break;
-	}
 }
 
 /**
@@ -191,74 +186,71 @@ lunar_calendar_get_property (GObject      *object,
  * 
  * Return value: a newly #LunarCalendar widget
  **/
-GtkWidget*
-lunar_calendar_new (void)
+GtkWidget* lunar_calendar_new (void)
 {
 	return g_object_new (LUNAR_TYPE_CALENDAR, NULL);
 }
 
 /**
+ * lunar_calendar_set_holiday_rgba:
+ * @calendar: a #LunarCalendar
+ * @rgba: the holiday rgba.
+ *
+ * Setup the holiday color.
+ *
+ **/
+void lunar_calendar_set_holiday_rgba (LunarCalendar *calendar, const GdkRGBA *rgba)
+{
+	if (calendar->rgba != NULL) {
+		if (gdk_rgba_equal ((gconstpointer) calendar->rgba, (gconstpointer) rgba)) {
+			return;
+		}
+		gdk_rgba_free(calendar->rgba);
+	}
+	calendar->rgba = gdk_rgba_copy (rgba);
+	gtk_widget_queue_draw(GTK_WIDGET(calendar));
+}
+
+/**
  * lunar_calendar_set_jieri_color:
- * @lunar: a #LunarCalendar
+ * @calendar: a #LunarCalendar
  * @color: the holiday color.
  *
  * Setup the holiday(jieri) color.
  *
  **/
-void		lunar_calendar_set_jieri_color		(LunarCalendar *lunar, const GdkColor *color)
+void lunar_calendar_set_jieri_color	(LunarCalendar *calendar, const GdkColor *color)
 {
-	LunarCalendarPrivate *priv = LUNAR_CALENDAR_GET_PRIVATE (lunar);
-	if (gdk_color_equal(priv->color, color))
-		return;
-	priv->color = gdk_color_copy(color);
-	gtk_widget_queue_draw(GTK_WIDGET(lunar));
+	gchar *spec;
+	spec = color_to_string (color);
+	GdkRGBA rgba;
+	rgba.red = color->red / 65535;
+	rgba.green = color->green / 65535;
+	rgba.blue = color->blue / 65535;
+	rgba.alpha = 1;
+
+	lunar_calendar_set_holiday_rgba(calendar, &rgba);
+	gtk_widget_queue_draw(GTK_WIDGET(calendar));
+
+	g_free(spec);
 }
 
-void  lunar_calendar_day_selected(GtkCalendar *calendar)
-{
-	guint year, month, day;
-	LunarDate *lunar;
-	GError *error = NULL;
-
-	if (getenv("LUNAR_CALENDAR_IGNORE_NON_CHINESE") != NULL)
-	{
-		const gchar* const * langs =  g_get_language_names();
-
-		if (langs[0] && langs[0][0] != '\0')
-			if (!g_str_has_prefix(langs[0], "zh_CN"))
-				g_object_set (calendar, "show-details", FALSE, NULL);
-	}
-
-	LunarCalendarPrivate *priv = LUNAR_CALENDAR_GET_PRIVATE (calendar);
-	gtk_calendar_get_date(calendar, &year, &month, &day);
-	lunar_date_set_solar_date(priv->date, year, month + 1, day, 0, &error);
-	char *jieri = lunar_date_get_jieri(priv->date, "\n");
-	char *format = g_strdup_printf(_("%(year)-%(month)-%(day)\nLunar:%(YUE)Month%(RI)Day\nGanzhi:%(Y60)Year%(M60)Month%(D60)Day\nBazi:%(Y8)Year%(M8)Month%(D8)Day\nShengxiao:%(shengxiao)\n<span foreground=\"blue\">%s</span>\n"), jieri);
-	char *strtime = lunar_date_strftime(priv->date, format);
-	gtk_widget_set_tooltip_markup(GTK_WIDGET(calendar), strtime);
-	g_free(jieri);
-	g_free(format);
-	g_free(strtime);
-}
-
-static gchar*
-calendar_detail_cb (GtkCalendar *gcalendar,
-		guint        year,
-		guint        month,
-		guint        day,
-		gpointer     data)
+static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint month, guint day, gpointer data)
 {
 	GError *error = NULL;
-	LunarCalendar *calendar = LUNAR_CALENDAR(data);
-	LunarCalendarPrivate *priv = LUNAR_CALENDAR_GET_PRIVATE (calendar);
+	gchar *color, *value, *holiday;
+	LunarCalendar *calendar;
 	gboolean show_detail;
+
+	calendar = LUNAR_CALENDAR(data);
 	g_object_get (calendar, "show-details", &show_detail, NULL);
 	if (! show_detail)
 		return NULL;
 
-	lunar_date_set_solar_date(priv->date, year, month + 1, day, 0, &error);
-	if (error)
+	lunar_date_set_solar_date(calendar->date, year, month + 1, day, 0, &error);
+	if (error != NULL)
 	{
+		g_clear_error (&error);
 		return NULL;
 	}
 
@@ -274,38 +266,25 @@ calendar_detail_cb (GtkCalendar *gcalendar,
 			}
 	}
 
-	char* buf;
-	gchar *val;
-
-	if (strlen(buf = lunar_date_strftime(priv->date, "%(jieri)")) > 0)
-	{
-		gchar* col = gdk_color_to_string(priv->color);
-		val = g_strconcat("<span foreground=\"", col, "\">", buf, "</span>", NULL);
-		g_free(col);
-		g_free(buf);
-		return val;
-	}
-	if (strcmp(buf = lunar_date_strftime(priv->date, "%(ri)"), "1") == 0)
-	{
-		g_free(buf);
-		return lunar_date_strftime(priv->date, _("%(YUE)Yue"));
-	}
-	else
-		return  lunar_date_strftime(priv->date, "%(RI)");
+	color = rgba_to_string(calendar->rgba);
+	holiday = lunar_date_get_calendar(calendar->date, 3);
+	value = g_strdup_printf("<span size=\"x-small\">%s</span>", holiday);
+	g_free(holiday);
+	return value;
 }
 
 static void lunar_calendar_init_i18n(void)
 {
-  static gboolean _lunar_calendar_gettext_initialized = FALSE;
+	static gboolean _lunar_calendar_gettext_initialized = FALSE;
 
-  if (!_lunar_calendar_gettext_initialized)
-    {
-	  bindtextdomain (GETTEXT_PACKAGE, LUNAR_CALENDAR_LOCALEDIR);
+	if (!_lunar_calendar_gettext_initialized)
+	{
+		bindtextdomain (GETTEXT_PACKAGE, LUNAR_CALENDAR_LOCALEDIR);
 #ifdef HAVE_BIND_TEXTDOMAIN_CODESET
-      bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+		bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif
-      _lunar_calendar_gettext_initialized = TRUE;
-    }
+		_lunar_calendar_gettext_initialized = TRUE;
+	}
 }
 
 /*

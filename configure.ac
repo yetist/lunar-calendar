@@ -107,11 +107,11 @@ dnl ================================================================
 dnl check glib, gobject and liblunar
 dnl ================================================================
 
-LUNAR_DATE_REQUIRED=2.4.0
+LUNAR_DATE_REQUIRED=2.9.1
 GTK2_REQUIRED=2.28.6
 GDK2_REQUIRED=3.0.9
 
-PKG_CHECK_MODULES(LUNAR_CALENDAR, lunar-date-2.0 >= $LUNAR_DATE_REQUIRED gtk+-3.0 >= $GTK2_REQUIRED  gdk-3.0 >= $GDK2_REQUIRED )
+PKG_CHECK_MODULES(LUNAR_CALENDAR, lunar-date-3.0 >= $LUNAR_DATE_REQUIRED gtk+-3.0 >= $GTK2_REQUIRED  gdk-3.0 >= $GDK2_REQUIRED )
 
 AC_SUBST(LUNAR_CALENDAR_CFLAGS)
 AC_SUBST(LUNAR_CALENDAR_LIBS)

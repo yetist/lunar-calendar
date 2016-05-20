@@ -1,9 +1,9 @@
 CLEANFILES =
 
-AM_CPPFLAGS =                                              \
+AM_CPPFLAGS =                                           \
 	-I$(top_srcdir)					\
         -I$(srcdir) 					\
-	$(LUNAR_CALENDAR_CFLAGS)				\
+	$(LUNAR_CALENDAR_CFLAGS)			\
 	$(WARN_CFLAGS)
 
 if PLATFORM_WIN32
@@ -33,7 +33,7 @@ endif
 if MS_LIB_AVAILABLE
 noinst_DATA = lunar-calendar-3.0.lib
 
-lunar-calendar-2.0.lib: liblunar-calendar-3.0.la lunar-calendar.def
+lunar-calendar-3.0.lib: liblunar-calendar-3.0.la lunar-calendar.def
 	lib -machine:@LIB_EXE_MACHINE_FLAG@ -name:liblunar-calendar-3.0-$(LT_CURRENT_MINUS_AGE).dll -def:lunar-calendar.def -out:$@
 
 install_ms_lib:
@@ -58,13 +58,12 @@ libtool_opts =							\
   -export-dynamic $(no_undefined) $(LIBTOOL_EXPORT_OPTIONS)	\
   -rpath $(libdir) $(liblunar_calendar_target_ldflags)
 
-
-source_h = lunar-calendar.h 
+source_h = lunar-calendar.h
 source_c = lunar-calendar.c
 
 lib_LTLIBRARIES = liblunar-calendar-3.0.la liblunar-calendar-preload-3.0.la
 
-liblunar_calendar_3_0_includedir = $(includedir)/liblunar-3.0/lunar-calendar
+liblunar_calendar_3_0_includedir = $(includedir)/lunar-calendar-3.0/lunar-calendar
 liblunar_calendar_3_0_include_HEADERS =	$(source_h)
 liblunar_calendar_3_0_la_SOURCES = $(source_c)
 liblunar_calendar_3_0_la_LIBADD = $(LUNAR_CALENDAR_LIBS)
@@ -78,14 +77,14 @@ endif
 
 install-calendar-local: install-ms-lib install-def-file
 
-liblunar_calendar_preload_3_0_includedir = $(includedir)/liblunar-3.0/lunar-calendar
+liblunar_calendar_preload_3_0_includedir = $(includedir)/lunar-calendar-3.0
 liblunar_calendar_preload_3_0_include_HEADERS = $(source_h)
 liblunar_calendar_preload_3_0_la_SOURCES = lunar-calendar-preload.c
 liblunar_calendar_preload_3_0_la_LDFLAGS =  -version-info $(LT_VERSION_INFO)
 liblunar_calendar_preload_3_0_la_LIBADD = 	\
-	$(LUNAR_CALENDAR_LIBS)	\
+	$(LUNAR_CALENDAR_LIBS)			\
 	liblunar-calendar-3.0.la		\
-	-ldl			\
+	-ldl					\
 	$(NULL)
 
 if HAVE_INTROSPECTION
@@ -99,7 +98,7 @@ LunarCalendar_3_0_gir_NAMESPACE = LunarCalendar
 LunarCalendar_3_0_gir_VERSION = 3.0
 LunarCalendar_3_0_gir_LIBS = $(builddir)/liblunar-calendar-3.0.la
 LunarCalendar_3_0_gir_FILES = $(source_h) $(source_c)
-LunarCalendar_3_0_gir_INCLUDES = Gtk-3.0 LunarDate-2.0
+LunarCalendar_3_0_gir_INCLUDES = GObject-2.0 Gtk-3.0 LunarDate-3.0
 
 girdir = $(datadir)/gir-1.0
 dist_gir_DATA = $(INTROSPECTION_GIRS)

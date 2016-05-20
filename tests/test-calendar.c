@@ -3,21 +3,21 @@
  * Copyright (C) 1998 Cesar Miquel, Shawn T. Amundson, Mattias Grönlund
  * Copyright (C) 2000 Tony Gale
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
@@ -42,7 +42,7 @@ typedef struct _CalendarData
 
   GHashTable    *details_table;
   GtkTextBuffer *details_buffer;
-  guint          details_changed;
+  gulong         details_changed;
 } CalendarData;
 
 enum
@@ -68,10 +68,16 @@ calendar_date_to_string (CalendarData *data,
 
   gtk_calendar_get_date (GTK_CALENDAR(data->window),
 			 &year, &month, &day);
-  date = g_date_new_dmy (day, month + 1, year);
-  g_date_strftime (buffer, buff_len-1, "%x", date);
-
-  g_date_free (date);
+  if (g_date_valid_dmy (day, month + 1, year))
+    {
+      date = g_date_new_dmy (day, month + 1, year);
+      g_date_strftime (buffer, buff_len-1, "%x", date);
+      g_date_free (date);
+    }
+  else
+    {
+      g_snprintf (buffer, buff_len - 1, "%d/%d/%d (invalid)", month + 1, day, year);
+    }
 }
 
 static void
@@ -164,15 +170,13 @@ calendar_day_selected_double_click (GtkWidget    *widget,
 
   calendar_date_to_string (data, buffer+27, 256-27);
   calendar_set_signal_strings (buffer, data);
-
   gtk_calendar_get_date (GTK_CALENDAR (data->window),
-			 NULL, NULL, &day);
+                         NULL, NULL, &day);
 
-//  if (GTK_CALENDAR (data->window)->marked_date[day-1] == 0) {
-//    gtk_calendar_mark_day (GTK_CALENDAR (data->window), day);
-//  } else { 
+//  if (gtk_calendar_get_day_is_marked (GTK_CALENDAR (data->window), day))
 //    gtk_calendar_unmark_day (GTK_CALENDAR (data->window), day);
-//  }
+//  else
+//    gtk_calendar_mark_day (GTK_CALENDAR (data->window), day);
 }
 
 static void
@@ -246,28 +250,30 @@ calendar_toggle_flag (GtkWidget    *toggle,
 void calendar_select_color (GtkWidget    *button,
                                  CalendarData *calendar)
 {
-	GdkColor color;
+  GdkRGBA rgba;
 
-  gtk_color_button_get_color(GTK_COLOR_BUTTON(button), &color);
-  lunar_calendar_set_jieri_color(LUNAR_CALENDAR(calendar->calendar_widget), &color);
+  gtk_color_chooser_get_rgba (GTK_COLOR_CHOOSER(button), &rgba);
+  lunar_calendar_set_holiday_rgba(LUNAR_CALENDAR(calendar->calendar_widget), &rgba);
 }
 
-void calendar_select_font (GtkWidget    *button,
-                                 CalendarData *calendar)
+void calendar_select_font (GtkWidget *button, CalendarData *calendar)
 {
   const char *font = NULL;
-  GtkRcStyle *style;
+  GtkCssProvider *provider;
+  gchar *data;
 
-  if (calendar->window)
-    font = gtk_font_button_get_font_name (GTK_FONT_BUTTON (button));
-
-  if (font)
-	{
-	  style = gtk_rc_style_new ();
-	  pango_font_description_free (style->font_desc);
-      style->font_desc = pango_font_description_from_string (font);
-	  gtk_widget_modify_style (calendar->window, style);
-	}
+  if (calendar->window) {
+      provider = g_object_get_data (G_OBJECT (calendar->window), "css-provider");
+      if (!provider) {
+	      provider = gtk_css_provider_new ();
+	      gtk_style_context_add_provider (gtk_widget_get_style_context (calendar->window), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+	      g_object_set_data_full (G_OBJECT (calendar->window), "css-provider", provider, g_object_unref);
+      }
+      font = gtk_font_button_get_font_name (GTK_FONT_BUTTON (button));
+      data = g_strdup_printf ("calendar { font: %s; }", font);
+      gtk_css_provider_load_from_data (provider, data, -1, NULL);
+      g_free (data);
+    }
 }
 
 static gchar*
@@ -309,40 +315,22 @@ demonstrate_details (CalendarData *data)
 {
   static char *rainbow[] = { "#900", "#980", "#390", "#095", "#059", "#309", "#908" };
   GtkCalendar *calendar = GTK_CALENDAR (data->calendar_widget);
-  gint row, col;
+  guint year, month, day;
+  gchar *detail;
 
-  for (row = 0; row < 6; ++row)
-    for (col = 0; col < 7; ++col)
-      {
-        gint year, month, day;
-        gchar *detail;
-    
-//        year = calendar->year;
-//        month = calendar->month;
-//        month += calendar->day_month[row][col];
-//        day = calendar->day[row][col];
-    
-        if (month < 1)
-          {
-            month += 12;
-            year -= 1;
-          }
-        else if (month > 12)
-          {
-            month -= 12;
-            year += 1;
-  }
+  gtk_calendar_get_date (calendar,
+                         &year, &month, &day);
 
-        detail = g_strdup_printf ("<span color='%s'>yadda\n"
-                                  "(%04d-%02d-%02d)</span>",
-                                  rainbow[(day - 1) % 7],
-                                  year, month, day);
-
-        calendar_set_detail (data, year, month - 1, day, detail);
-      }
+  for (day = 0; day < 29; ++day)
+    {
+      detail = g_strdup_printf ("<span color='%s'>yadda\n"
+                                "(%04d-%02d-%02d)</span>",
+                                rainbow[(day - 1) % 7], year, month, day);
+      calendar_set_detail (data, year, month, day, detail);
+   }
 
   gtk_widget_queue_resize (data->calendar_widget);
-  calendar_update_details (data);
+  //calendar_update_details (data);
 }
 
 static void
@@ -350,7 +338,7 @@ reset_details (CalendarData *data)
 {
   g_hash_table_remove_all (data->details_table);
   gtk_widget_queue_resize (data->calendar_widget);
-  calendar_update_details (data);
+  //calendar_update_details (data);
 }
 
 static void
@@ -368,18 +356,23 @@ calendar_toggle_details (GtkWidget    *widget,
 static GtkWidget*
 create_expander (const char *caption,
                  GtkWidget  *child,
-                 gdouble     xscale,
-                 gdouble     yscale)
+                 GtkAlign    halign,
+                 GtkAlign    valign)
 {
   GtkWidget *expander = gtk_expander_new ("");
   GtkWidget *label = gtk_expander_get_label_widget (GTK_EXPANDER (expander));
-  GtkWidget *align = gtk_alignment_new (0, 0, xscale, yscale);
 
-  gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 0, 18, 0);
+  g_object_set (child,
+                "margin-top", 6,
+                "margin-bottom", 0,
+                "margin-start", 18,
+                "margin-end", 0,
+                "halign", halign,
+                "valign", valign,
+                NULL);
   gtk_label_set_markup (GTK_LABEL (label), caption);
 
-  gtk_container_add (GTK_CONTAINER (expander), align);
-  gtk_container_add (GTK_CONTAINER (align), child);
+  gtk_container_add (GTK_CONTAINER (expander), child);
 
   return expander;
 }
@@ -387,19 +380,24 @@ create_expander (const char *caption,
 static GtkWidget*
 create_frame (const char *caption,
               GtkWidget  *child,
-              gdouble     xscale,
-              gdouble     yscale)
+              GtkAlign    halign,
+              GtkAlign    valign)
 {
   GtkWidget *frame = gtk_frame_new ("");
   GtkWidget *label = gtk_frame_get_label_widget (GTK_FRAME (frame));
-  GtkWidget *align = gtk_alignment_new (0, 0, xscale, yscale);
 
+  g_object_set (child,
+                "margin-top", 6,
+                "margin-bottom", 0,
+                "margin-start", 18,
+                "margin-end", 0,
+                "halign", halign,
+                "valign", valign,
+                NULL);
   gtk_frame_set_shadow_type (GTK_FRAME (frame), GTK_SHADOW_NONE);
-  gtk_alignment_set_padding (GTK_ALIGNMENT (align), 6, 0, 18, 0);
   gtk_label_set_markup (GTK_LABEL (label), caption);
 
-  gtk_container_add (GTK_CONTAINER (frame), align);
-  gtk_container_add (GTK_CONTAINER (align), child);
+  gtk_container_add (GTK_CONTAINER (frame), child);
 
   return frame;
 }
@@ -427,10 +425,11 @@ create_calendar(void)
 
   GtkWidget *window, *hpaned, *vbox, *rpane, *hbox;
   GtkWidget *calendar, *toggle, *scroller, *button;
-  GtkWidget *frame, *label, *bbox, *align, *details;
+  GtkWidget *frame, *label, *bbox, *details;
 
   GtkSizeGroup *size;
-  GtkStyle *style;
+  GtkStyleContext *context;
+  PangoFontDescription *font_desc;
   gchar *font;
   gint i;
   
@@ -464,12 +463,13 @@ create_calendar(void)
 		    G_CALLBACK (gtk_false),
 		    NULL);
 
-  hpaned = gtk_hpaned_new ();
+  hpaned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
 
   /* Calendar widget */
+
   calendar = lunar_calendar_new ();
   calendar_data.calendar_widget = calendar;
-  frame = create_frame ("<b>Calendar</b>", calendar, 0, 0);
+  frame = create_frame ("<b>Calendar</b>", calendar, GTK_ALIGN_CENTER, GTK_ALIGN_CENTER);
   gtk_paned_pack1 (GTK_PANED (hpaned), frame, TRUE, FALSE);
 
   calendar_data.window = calendar;
@@ -498,21 +498,23 @@ create_calendar(void)
 		    G_CALLBACK (calendar_next_year),
 		    &calendar_data);
 
-  rpane = gtk_vbox_new (FALSE, DEF_PAD_SMALL);
+  rpane = gtk_box_new (GTK_ORIENTATION_VERTICAL, DEF_PAD_SMALL);
   gtk_paned_pack2 (GTK_PANED (hpaned), rpane, FALSE, FALSE);
 
   /* Build the right font-button */
 
-  vbox = gtk_vbox_new(FALSE, DEF_PAD_SMALL);
-  frame = create_frame ("<b>Options</b>", vbox, 1, 0);
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, DEF_PAD_SMALL);
+  frame = create_frame ("<b>Options</b>", vbox, GTK_ALIGN_FILL, GTK_ALIGN_CENTER);
   gtk_box_pack_start (GTK_BOX (rpane), frame, FALSE, TRUE, 0);
   size = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 
-  gtk_widget_ensure_style (calendar);
-  style = gtk_widget_get_style (calendar);
-  font = pango_font_description_to_string (style->font_desc);
+  context = gtk_widget_get_style_context (calendar);
+  gtk_style_context_get (context, GTK_STATE_FLAG_NORMAL,
+			 GTK_STYLE_PROPERTY_FONT, &font_desc, NULL);
+  font = pango_font_description_to_string (font_desc);
   button = gtk_font_button_new_with_font (font);
   g_free (font);
+  pango_font_description_free (font_desc);
 
   g_signal_connect (button, "font-set",
                     G_CALLBACK(calendar_select_font),
@@ -520,28 +522,30 @@ create_calendar(void)
 
   label = gtk_label_new_with_mnemonic ("_Font:");
   gtk_label_set_mnemonic_widget (GTK_LABEL (label), button);
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_size_group_add_widget (size, label);
 
-  hbox = gtk_hbox_new (FALSE, DEF_PAD_SMALL);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, DEF_PAD_SMALL);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
 
   /* Color button */
-  GdkColor color;
-  gdk_color_parse("red", &color);
+  GdkRGBA rgba;
+  gdk_rgba_parse(&rgba, "rgba(255, 0, 0, 1.0)");
 
-  button = gtk_color_button_new_with_color(&color);
-  lunar_calendar_set_jieri_color(LUNAR_CALENDAR(calendar), &color);
+  button = gtk_color_button_new_with_rgba (&rgba);
+  lunar_calendar_set_holiday_rgba(LUNAR_CALENDAR(calendar), &rgba);
   g_signal_connect (button, "color-set", G_CALLBACK(calendar_select_color), &calendar_data);
 
   label = gtk_label_new_with_mnemonic ("Holiday _Color:");
   gtk_label_set_mnemonic_widget (GTK_LABEL (label), button);
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_size_group_add_widget (size, label);
 
-  hbox = gtk_hbox_new (FALSE, DEF_PAD_SMALL);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, DEF_PAD_SMALL);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
@@ -557,10 +561,11 @@ create_calendar(void)
 
   label = gtk_label_new_with_mnemonic ("Details W_idth:");
   gtk_label_set_mnemonic_widget (GTK_LABEL (label), button);
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_size_group_add_widget (size, label);
 
-  hbox = gtk_hbox_new (FALSE, DEF_PAD_SMALL);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, DEF_PAD_SMALL);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
@@ -577,10 +582,11 @@ create_calendar(void)
 
   label = gtk_label_new_with_mnemonic ("Details H_eight:");
   gtk_label_set_mnemonic_widget (GTK_LABEL (label), button);
-  gtk_misc_set_alignment (GTK_MISC (label), 0.0, 0.5);
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
   gtk_size_group_add_widget (size, label);
 
-  hbox = gtk_hbox_new (FALSE, DEF_PAD_SMALL);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, DEF_PAD_SMALL);
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (hbox), button, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
@@ -588,8 +594,8 @@ create_calendar(void)
 #if 0
   /* Build the right details frame */
 
-  vbox = gtk_vbox_new(FALSE, DEF_PAD_SMALL);
-  frame = create_frame ("<b>Details</b>", vbox, 1, 1);
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, DEF_PAD_SMALL);
+  frame = create_frame ("<b>Details</b>", vbox, GTK_ALIGN_FILL, GTK_ALIGN_FILL);
   gtk_box_pack_start (GTK_BOX (rpane), frame, FALSE, TRUE, 0);
 
   details = gtk_text_view_new();
@@ -610,10 +616,10 @@ create_calendar(void)
 
   gtk_box_pack_start (GTK_BOX (vbox), scroller, FALSE, TRUE, 0);
 
-  hbox = gtk_hbox_new (FALSE, DEF_PAD_SMALL);
-  align = gtk_alignment_new (0.0, 0.5, 0.0, 0.0);
-  gtk_container_add (GTK_CONTAINER (align), hbox);
-  gtk_box_pack_start (GTK_BOX (vbox), align, FALSE, TRUE, 0);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, DEF_PAD_SMALL);
+  gtk_widget_set_halign (hbox, GTK_ALIGN_START);
+  gtk_widget_set_valign (hbox, GTK_ALIGN_CENTER);
+  gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
 
   button = gtk_button_new_with_mnemonic ("Demonstrate _Details");
 
@@ -642,8 +648,8 @@ create_calendar(void)
   
   /* Build the Right frame with the flags in */ 
 
-  vbox = gtk_vbox_new(FALSE, 0);
-  frame = create_expander ("<b>Flags</b>", vbox, 1, 0);
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+  frame = create_expander ("<b>Flags</b>", vbox, GTK_ALIGN_FILL, GTK_ALIGN_CENTER);
   gtk_box_pack_start (GTK_BOX (rpane), frame, TRUE, TRUE, 0);
 
   for (i = 0; i < G_N_ELEMENTS (calendar_data.settings); i++)
@@ -663,24 +669,25 @@ create_calendar(void)
    *  Build the Signal-event part.
    */
 
-  vbox = gtk_vbox_new (TRUE, DEF_PAD_SMALL);
-  frame = create_frame ("<b>Signal Events</b>", vbox, 1, 0);
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, DEF_PAD_SMALL);
+  gtk_box_set_homogeneous (GTK_BOX (vbox), TRUE);
+  frame = create_frame ("<b>Signal Events</b>", vbox, GTK_ALIGN_FILL, GTK_ALIGN_CENTER);
   
-  hbox = gtk_hbox_new (FALSE, 3);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
   label = gtk_label_new ("Signal:");
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
   calendar_data.last_sig = gtk_label_new ("");
   gtk_box_pack_start (GTK_BOX (hbox), calendar_data.last_sig, FALSE, TRUE, 0);
 
-  hbox = gtk_hbox_new (FALSE, 3);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
   label = gtk_label_new ("Previous signal:");
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
   calendar_data.prev_sig = gtk_label_new ("");
   gtk_box_pack_start (GTK_BOX (hbox), calendar_data.prev_sig, FALSE, TRUE, 0);
 
-  hbox = gtk_hbox_new (FALSE, 3);
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
   label = gtk_label_new ("Second previous signal:");
   gtk_box_pack_start (GTK_BOX (hbox), label, FALSE, TRUE, 0);
@@ -691,24 +698,29 @@ create_calendar(void)
    *  Glue everything together
    */
 
-  bbox = gtk_hbutton_box_new ();
+  bbox = gtk_button_box_new (GTK_ORIENTATION_HORIZONTAL);
   gtk_button_box_set_layout(GTK_BUTTON_BOX(bbox), GTK_BUTTONBOX_END);
 
   button = gtk_button_new_with_label ("Close");
   g_signal_connect (button, "clicked", G_CALLBACK (gtk_main_quit), NULL);
   gtk_container_add (GTK_CONTAINER (bbox), button);
 
-  vbox = gtk_vbox_new (FALSE, DEF_PAD_SMALL);
+  vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, DEF_PAD_SMALL);
 
-  gtk_box_pack_start (GTK_BOX (vbox), hpaned,                TRUE,  TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), gtk_hseparator_new (), FALSE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), frame,                 FALSE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), gtk_hseparator_new (), FALSE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (vbox), bbox,                  FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), hpaned,
+                      TRUE,  TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL),
+                      FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), frame,
+                      FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL),
+                      FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (vbox), bbox,
+                      FALSE, TRUE, 0);
 
   gtk_container_add (GTK_CONTAINER (window), vbox);
 
-  //GTK_WIDGET_SET_FLAGS (button, GTK_CAN_DEFAULT);
+  gtk_widget_set_can_default (button, TRUE);
   gtk_widget_grab_default (button);
 
   gtk_window_set_default_size (GTK_WINDOW (window), 600, 0);
@@ -720,6 +732,9 @@ int main(int   argc,
          char *argv[] )
 {
   gtk_init (&argc, &argv);
+
+  if (g_getenv ("GTK_RTL"))
+    gtk_widget_set_default_direction (GTK_TEXT_DIR_RTL);
 
   create_calendar();
 
