@@ -4,7 +4,7 @@
 <FILE>lunar-calendar</FILE>
 <TITLE>LunarCalendar</TITLE>
 LunarCalendar
-lunar_calendar_set_jieri_color
+lunar_calendar_set_holiday_rgba
 lunar_calendar_new
 <SUBSECTION Standard>
 LUNAR_CALENDAR
@@ -15,4 +15,3 @@ LUNAR_CALENDAR_CLASS
 LUNAR_IS_CALENDAR_CLASS
 LUNAR_CALENDAR_GET_CLASS
 </SECTION>
-
