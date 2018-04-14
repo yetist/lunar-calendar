@@ -86,7 +86,7 @@ static gchar *rgba_to_string (const GdkRGBA *rgba)
 	return pango_color_to_string (&pango_color);
 }
 
-static void lunar_calendar_dispose (GObject *gobject)
+static void lunar_calendar_finalize (GObject *gobject)
 {
 	LunarCalendar *calendar;
 
@@ -99,7 +99,7 @@ static void lunar_calendar_dispose (GObject *gobject)
 
 	if (calendar->rgba != NULL)
 		gdk_rgba_free(calendar->rgba);
-	G_OBJECT_CLASS (lunar_calendar_parent_class)->dispose(gobject);
+	G_OBJECT_CLASS (lunar_calendar_parent_class)->finalize(gobject);
 }
 
 static void  lunar_calendar_day_selected(GtkCalendar *gcalendar)
@@ -133,9 +133,9 @@ static void  lunar_calendar_day_selected(GtkCalendar *gcalendar)
 	holiday = lunar_date_get_holiday(calendar->date, "\n");
 	format = g_strdup_printf("%s\n%s\n%s\n%s\n<span color=\"%s\">%s</span>",
 			_("%(year)-%(month)-%(day)"),
-			_("%(YUE)%(RI)"),
-			_("%(Y60)%(M60)%(D60)"),
-			_("%(shengxiao)"),
+			_("%(YUE)yue%(RI)"),
+			_("%(Y60)nian%(M60)yue%(D60)ri"),
+			_("shengxiao: %(shengxiao)"),
 			color,
 			holiday);
 	strtime = lunar_date_strftime(calendar->date, format);
@@ -152,7 +152,7 @@ static void lunar_calendar_class_init (LunarCalendarClass *class)
 	GObjectClass *gobject_class = G_OBJECT_CLASS (class);
 	GtkCalendarClass *gcalendar_class = GTK_CALENDAR_CLASS (class);
 
-	gobject_class->dispose = lunar_calendar_dispose;
+	gobject_class->finalize = lunar_calendar_finalize;
 	gcalendar_class->day_selected = lunar_calendar_day_selected;
 	gtk_widget_class_set_css_name (GTK_WIDGET_CLASS(class), "calendar");
 }

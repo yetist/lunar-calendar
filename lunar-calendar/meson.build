@@ -51,9 +51,9 @@ pkg.generate(
   name: 'lunar-calendar-3.0',
   version: meson.project_version(),
   description: 'Chinese Lunar Calendar Widget Library',
-  requires_private: ['gio-2.0', 'gtk+-3.0', 'gdk-3.0', 'lunar-date-3.0'],
-  filebase: 'lunar-calendar-3.0',
-  libraries: '-llunar-calendar-3.0',
+  requires: ['gtk+-3.0', 'lunar-date-3.0'],
+  filebase: 'lunar-calendar-@0@'.format(api_version),
+  libraries: [liblunar_calendar],
   subdirs: 'lunar-calendar-3.0',
   )
 

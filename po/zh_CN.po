@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: liblunar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-14 17:45+0800\n"
+"POT-Creation-Date: 2018-04-14 21:15+0800\n"
 "PO-Revision-Date: 2011-05-07 20:28+0800\n"
 "Last-Translator: yetist <yetist@gmail.com>\n"
 "Language-Team: yetist@gmail.com <yetist@gmail.com>\n"
@@ -22,20 +22,19 @@ msgstr ""
 
 #: lunar-calendar/lunar-calendar.c:135
 msgid "%(year)-%(month)-%(day)"
-msgstr ""
+msgstr "公历：%(year)年%(month)月%(day)日"
 
 #: lunar-calendar/lunar-calendar.c:136
-#, fuzzy
-msgid "%(YUE)%(RI)"
-msgstr "%(YUE)月"
+msgid "%(YUE)yue%(RI)"
+msgstr "农历：%(YUE)月%(RI)日"
 
 #: lunar-calendar/lunar-calendar.c:137
-msgid "%(Y60)%(M60)%(D60)"
-msgstr ""
+msgid "%(Y60)nian%(M60)yue%(D60)ri"
+msgstr "干支：%(Y60)年%(M60)月%(D60)日"
 
 #: lunar-calendar/lunar-calendar.c:138
-msgid "%(shengxiao)"
-msgstr ""
+msgid "shengxiao: %(shengxiao)"
+msgstr "生肖： %(shengxiao)"
 
 #~ msgid ""
 #~ "%(year)-%(month)-%(day)\n"
