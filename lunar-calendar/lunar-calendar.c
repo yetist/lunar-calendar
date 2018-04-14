@@ -131,13 +131,21 @@ static void  lunar_calendar_day_selected(GtkCalendar *gcalendar)
 
 	color = rgba_to_string(calendar->rgba);
 	holiday = lunar_date_get_holiday(calendar->date, "\n");
-	format = g_strdup_printf("%s\n%s\n%s\n%s\n<span color=\"%s\">%s</span>",
-			_("%(year)-%(month)-%(day)"),
-			_("%(YUE)yue%(RI)"),
-			_("%(Y60)nian%(M60)yue%(D60)ri"),
-			_("shengxiao: %(shengxiao)"),
-			color,
-			holiday);
+	if (holiday != NULL) {
+		format = g_strdup_printf("%s\n%s\n%s\n%s\n<span color=\"%s\">%s</span>",
+				_("%(year)-%(month)-%(day)"),
+				_("%(YUE)yue%(RI)"),
+				_("%(Y60)nian%(M60)yue%(D60)ri"),
+				_("shengxiao: %(shengxiao)"),
+				color,
+				holiday);
+	} else {
+		format = g_strdup_printf("%s\n%s\n%s\n%s",
+				_("%(year)-%(month)-%(day)"),
+				_("%(YUE)yue%(RI)"),
+				_("%(Y60)nian%(M60)yue%(D60)ri"),
+				_("shengxiao: %(shengxiao)"));
+	}
 	strtime = lunar_date_strftime(calendar->date, format);
 	g_free(color);
 	g_free(holiday);
