@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: liblunar\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-05-07 20:27+0800\n"
+"POT-Creation-Date: 2018-04-14 17:45+0800\n"
 "PO-Revision-Date: 2011-05-07 20:28+0800\n"
 "Last-Translator: yetist <yetist@gmail.com>\n"
 "Language-Team: yetist@gmail.com <yetist@gmail.com>\n"
@@ -20,22 +20,34 @@ msgstr ""
 "X-Poedit-Language: Chinese\n"
 "X-Poedit-Country: CHINA\n"
 
-#: ../lunar-calendar/lunar-calendar.c:236
-msgid ""
-"%(year)-%(month)-%(day)\n"
-"Lunar:%(YUE)Month%(RI)Day\n"
-"Ganzhi:%(Y60)Year%(M60)Month%(D60)Day\n"
-"Bazi:%(Y8)Year%(M8)Month%(D8)Day\n"
-"Shengxiao:%(shengxiao)\n"
-"<span foreground=\"blue\">%s</span>\n"
+#: lunar-calendar/lunar-calendar.c:135
+msgid "%(year)-%(month)-%(day)"
 msgstr ""
-"%(year)年%(month)月%(day)日\n"
-"农历：%(YUE)月%(RI)日\n"
-"干支：%(Y60)年%(M60)月%(D60)日\n"
-"八字：%(Y8)年%(M8)月%(D8)日\n"
-"生肖：%(shengxiao)\n"
-"<span foreground=\"blue\">%s</span>\n"
 
-#: ../lunar-calendar/lunar-calendar.c:291
-msgid "%(YUE)Yue"
+#: lunar-calendar/lunar-calendar.c:136
+#, fuzzy
+msgid "%(YUE)%(RI)"
 msgstr "%(YUE)月"
+
+#: lunar-calendar/lunar-calendar.c:137
+msgid "%(Y60)%(M60)%(D60)"
+msgstr ""
+
+#: lunar-calendar/lunar-calendar.c:138
+msgid "%(shengxiao)"
+msgstr ""
+
+#~ msgid ""
+#~ "%(year)-%(month)-%(day)\n"
+#~ "Lunar:%(YUE)Month%(RI)Day\n"
+#~ "Ganzhi:%(Y60)Year%(M60)Month%(D60)Day\n"
+#~ "Bazi:%(Y8)Year%(M8)Month%(D8)Day\n"
+#~ "Shengxiao:%(shengxiao)\n"
+#~ "<span foreground=\"blue\">%s</span>\n"
+#~ msgstr ""
+#~ "%(year)年%(month)月%(day)日\n"
+#~ "农历：%(YUE)月%(RI)日\n"
+#~ "干支：%(Y60)年%(M60)月%(D60)日\n"
+#~ "八字：%(Y8)年%(M8)月%(D8)日\n"
+#~ "生肖：%(shengxiao)\n"
+#~ "<span foreground=\"blue\">%s</span>\n"

@@ -41,7 +41,7 @@ void  gtk_calendar_set_display_options (GtkCalendar *calendar, GtkCalendarDispla
 	char *error;
 	void  (* _gtk_calendar_set_display_options) (GtkCalendar *calendar, GtkCalendarDisplayOptions flags) = NULL;
 
-	handle = dlopen("/usr/lib/libgtk-x11-2.0.so", RTLD_LAZY);
+	handle = dlopen("/usr/lib/libgtk-3.so", RTLD_LAZY);
 	if (!handle) {
 		fprintf(stderr, "%s\n", dlerror());
 		exit(EXIT_FAILURE);

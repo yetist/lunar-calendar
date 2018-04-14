@@ -63,7 +63,7 @@ source_c = lunar-calendar.c
 
 lib_LTLIBRARIES = liblunar-calendar-3.0.la liblunar-calendar-preload-3.0.la
 
-liblunar_calendar_3_0_includedir = $(includedir)/lunar-calendar-3.0/lunar-calendar
+liblunar_calendar_3_0_includedir = $(includedir)/lunar-calendar-3.0
 liblunar_calendar_3_0_include_HEADERS =	$(source_h)
 liblunar_calendar_3_0_la_SOURCES = $(source_c)
 liblunar_calendar_3_0_la_LIBADD = $(LUNAR_CALENDAR_LIBS)

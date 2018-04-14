@@ -8,7 +8,7 @@
  */
 
 using Gtk;
-using LunarCalendar;
+using Lunar;
 
 static int main (string[] args) {
 	Gtk.init (ref args);
@@ -18,7 +18,7 @@ static int main (string[] args) {
 	//window.position = WindowPosition.CENTER;
 	window.destroy.connect (Gtk.main_quit);
 
-	var calendar = new LunarCalendar.Calendar ();
+	var calendar = new Lunar.Calendar ();
 	window.add (calendar);
 	window.show_all ();
 

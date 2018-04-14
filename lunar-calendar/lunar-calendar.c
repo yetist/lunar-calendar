@@ -53,17 +53,8 @@ struct _LunarCalendar
 	GdkRGBA     *rgba;
 };
 
-static void lunar_calendar_set_property  (GObject          *object,
-		guint             prop_id,
-		const GValue     *value,
-		GParamSpec       *pspec);
-static void lunar_calendar_get_property  (GObject          *object,
-		guint             prop_id,
-		GValue           *value,
-		GParamSpec       *pspec);
-
-static void lunar_calendar_month_changed (GtkCalendar *calendar, gpointer     user_data);
 static void lunar_calendar_init_i18n(void);
+static void  lunar_calendar_day_selected(GtkCalendar *gcalendar);
 
 static gchar* calendar_detail_cb (GtkCalendar *gcalendar,
 		guint        year,
@@ -111,10 +102,9 @@ static void lunar_calendar_dispose (GObject *gobject)
 	G_OBJECT_CLASS (lunar_calendar_parent_class)->dispose(gobject);
 }
 
-void  lunar_calendar_day_selected(GtkCalendar *gcalendar)
+static void  lunar_calendar_day_selected(GtkCalendar *gcalendar)
 {
 	guint year, month, day;
-	LunarDate *lunar;
 	GError *error = NULL;
 	LunarCalendar *calendar;
 	gchar *holiday, *format, *strtime, *color;
@@ -169,8 +159,11 @@ static void lunar_calendar_class_init (LunarCalendarClass *class)
 
 static void lunar_calendar_init (LunarCalendar *calendar)
 {
+	GdkRGBA rgba;
+
 	calendar->date = lunar_date_new();
-	gdk_rgba_parse(calendar->rgba, "rgba(0,0,255,1)");
+	gdk_rgba_parse(&rgba, "blue");
+	calendar->rgba = gdk_rgba_copy(&rgba);
 
 	/* FIXME: here we can setup the locale info, but it looks like not a good idea */
 	lunar_calendar_init_i18n();
@@ -222,8 +215,9 @@ void lunar_calendar_set_holiday_rgba (LunarCalendar *calendar, const GdkRGBA *rg
 void lunar_calendar_set_jieri_color	(LunarCalendar *calendar, const GdkColor *color)
 {
 	gchar *spec;
-	spec = color_to_string (color);
 	GdkRGBA rgba;
+
+	spec = color_to_string (color);
 	rgba.red = color->red / 65535;
 	rgba.green = color->green / 65535;
 	rgba.blue = color->blue / 65535;
@@ -238,7 +232,7 @@ void lunar_calendar_set_jieri_color	(LunarCalendar *calendar, const GdkColor *co
 static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint month, guint day, gpointer data)
 {
 	GError *error = NULL;
-	gchar *color, *value, *holiday;
+	gchar *value, *holiday;
 	LunarCalendar *calendar;
 	gboolean show_detail;
 
@@ -266,7 +260,6 @@ static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint mont
 			}
 	}
 
-	color = rgba_to_string(calendar->rgba);
 	holiday = lunar_date_get_calendar(calendar->date, 3);
 	value = g_strdup_printf("<span size=\"x-small\">%s</span>", holiday);
 	g_free(holiday);

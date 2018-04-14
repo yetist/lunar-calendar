@@ -23,6 +23,7 @@
 #define __LUNAR_CALENDAR_H__  1
 
 #include <gtk/gtk.h>
+#include <lunar-calendar/lunar-calendar-version.h>
 
 G_BEGIN_DECLS
 
