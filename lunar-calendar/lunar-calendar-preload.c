@@ -24,6 +24,8 @@
 #include <gtk/gtk.h>
 #include <lunar-calendar/lunar-calendar.h>
 
+void  gtk_calendar_display_options (GtkCalendar *calendar, GtkCalendarDisplayOptions flags);
+
 GtkWidget* gtk_calendar_new (void)
 {
 	GtkWidget* calendar;

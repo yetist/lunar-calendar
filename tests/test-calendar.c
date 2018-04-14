@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <gtk/gtk.h>
-#include <lunar-calendar.h>
+#include <lunar-calendar/lunar-calendar.h>
 
 #define DEF_PAD 12
 #define DEF_PAD_SMALL 6
@@ -57,6 +57,8 @@ enum
 /*
  * GtkCalendar
  */
+void calendar_select_color (GtkWidget    *button, CalendarData *calendar);
+void calendar_select_font (GtkWidget *button, CalendarData *calendar);
 
 static void
 calendar_date_to_string (CalendarData *data,
@@ -76,54 +78,9 @@ calendar_date_to_string (CalendarData *data,
     }
   else
     {
-      g_snprintf (buffer, buff_len - 1, "%d/%d/%d (invalid)", month + 1, day, year);
+      g_snprintf (buffer, buff_len - 1, "%u/%u/%u (invalid)", month + 1, day, year);
     }
 }
-
-static void
-calendar_set_detail (CalendarData *data,
-                     guint         year,
-                     guint         month,
-                     guint         day,
-                     gchar        *detail)
-{
-  gchar *key = g_strdup_printf ("%04d-%02d-%02d", year, month + 1, day);
-  g_hash_table_replace (data->details_table, key, detail);
-}
-
-static gchar*
-calendar_get_detail (CalendarData *data,
-                     guint         year,
-                     guint         month,
-                     guint         day)
-{
-  const gchar *detail;
-  gchar *key;
-
-  key = g_strdup_printf ("%04d-%02d-%02d", year, month + 1, day);
-  detail = g_hash_table_lookup (data->details_table, key);
-  g_free (key);
-
-  return (detail ? g_strdup (detail) : NULL);
-}
-
-#if 0
-static void
-calendar_update_details (CalendarData *data)
-{
-  guint year, month, day;
-  gchar *detail;
-
-  gtk_calendar_get_date (GTK_CALENDAR (data->calendar_widget), &year, &month, &day);
-  detail = calendar_get_detail (data, year, month, day);
-
-  g_signal_handler_block (data->details_buffer, data->details_changed);
-  gtk_text_buffer_set_text (data->details_buffer, detail ? detail : "", -1);
-  g_signal_handler_unblock (data->details_buffer, data->details_changed);
-
-  g_free (detail);
-}
-#endif
 
 static void
 calendar_set_signal_strings (char         *sig_str,
@@ -223,7 +180,8 @@ calendar_next_year (GtkWidget    *widget,
 static void
 calendar_set_flags (CalendarData *calendar)
 {
-  gint options = 0, i;
+  gint options = 0;
+  guint i;
 
   for (i = 0; i < G_N_ELEMENTS (calendar->settings); i++)
     if (calendar->settings[i])
@@ -237,7 +195,7 @@ static void
 calendar_toggle_flag (GtkWidget    *toggle,
                       CalendarData *calendar)
 {
-  gint i;
+  guint i;
 
   for (i = 0; i < G_N_ELEMENTS (calendar->flag_checkboxes); i++)
     if (calendar->flag_checkboxes[i] == toggle)
@@ -269,88 +227,12 @@ void calendar_select_font (GtkWidget *button, CalendarData *calendar)
 	      gtk_style_context_add_provider (gtk_widget_get_style_context (calendar->window), GTK_STYLE_PROVIDER (provider), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 	      g_object_set_data_full (G_OBJECT (calendar->window), "css-provider", provider, g_object_unref);
       }
-      font = gtk_font_button_get_font_name (GTK_FONT_BUTTON (button));
+      font = gtk_font_chooser_get_font (GTK_FONT_CHOOSER(button));
+
       data = g_strdup_printf ("calendar { font: %s; }", font);
       gtk_css_provider_load_from_data (provider, data, -1, NULL);
       g_free (data);
     }
-}
-
-static gchar*
-calendar_detail_cb (GtkCalendar *calendar,
-                    guint        year,
-                    guint        month,
-                    guint        day,
-                    gpointer     data)
-{
-  return calendar_get_detail (data, year, month, day);
-}
-
-static void
-calendar_details_changed (GtkTextBuffer *buffer,
-                          CalendarData  *data)
-{
-  GtkTextIter start, end;
-  guint year, month, day;
-  gchar *detail;
-
-  gtk_text_buffer_get_start_iter(buffer, &start);
-  gtk_text_buffer_get_end_iter(buffer, &end);
-
-  gtk_calendar_get_date (GTK_CALENDAR (data->calendar_widget), &year, &month, &day);
-  detail = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
-
-  if (!detail[0])
-    {
-      g_free (detail);
-      detail = NULL;
-    }
-
-  calendar_set_detail (data, year, month, day, detail);
-  gtk_widget_queue_resize (data->calendar_widget);
-}
-
-static void
-demonstrate_details (CalendarData *data)
-{
-  static char *rainbow[] = { "#900", "#980", "#390", "#095", "#059", "#309", "#908" };
-  GtkCalendar *calendar = GTK_CALENDAR (data->calendar_widget);
-  guint year, month, day;
-  gchar *detail;
-
-  gtk_calendar_get_date (calendar,
-                         &year, &month, &day);
-
-  for (day = 0; day < 29; ++day)
-    {
-      detail = g_strdup_printf ("<span color='%s'>yadda\n"
-                                "(%04d-%02d-%02d)</span>",
-                                rainbow[(day - 1) % 7], year, month, day);
-      calendar_set_detail (data, year, month, day, detail);
-   }
-
-  gtk_widget_queue_resize (data->calendar_widget);
-  //calendar_update_details (data);
-}
-
-static void
-reset_details (CalendarData *data)
-{
-  g_hash_table_remove_all (data->details_table);
-  gtk_widget_queue_resize (data->calendar_widget);
-  //calendar_update_details (data);
-}
-
-static void
-calendar_toggle_details (GtkWidget    *widget,
-                         CalendarData *data)
-{
-  if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)))
-    gtk_calendar_set_detail_func (GTK_CALENDAR (data->calendar_widget),
-                                  calendar_detail_cb, data, NULL);
-  else
-    gtk_calendar_set_detail_func (GTK_CALENDAR (data->calendar_widget),
-                                  NULL, NULL, NULL);
 }
 
 static GtkWidget*
@@ -424,14 +306,15 @@ create_calendar(void)
   static CalendarData calendar_data;
 
   GtkWidget *window, *hpaned, *vbox, *rpane, *hbox;
-  GtkWidget *calendar, *toggle, *scroller, *button;
-  GtkWidget *frame, *label, *bbox, *details;
+  GtkWidget *calendar, *toggle, *button;
+  GtkWidget *frame, *label, *bbox;
 
   GtkSizeGroup *size;
   GtkStyleContext *context;
   PangoFontDescription *font_desc;
   gchar *font;
-  gint i;
+  guint i;
+  GdkRGBA rgba;
   
   struct {
     gboolean init;
@@ -532,7 +415,6 @@ create_calendar(void)
   gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, TRUE, 0);
 
   /* Color button */
-  GdkRGBA rgba;
   gdk_rgba_parse(&rgba, "rgba(255, 0, 0, 1.0)");
 
   button = gtk_color_button_new_with_rgba (&rgba);
