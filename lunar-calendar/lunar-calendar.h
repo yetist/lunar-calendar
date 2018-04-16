@@ -29,7 +29,25 @@ G_BEGIN_DECLS
 
 #define LUNAR_TYPE_CALENDAR              (lunar_calendar_get_type ())
 
+#if GLIB_CHECK_VERSION(2, 44, 0)
 G_DECLARE_FINAL_TYPE (LunarCalendar, lunar_calendar, LUNAR, CALENDAR, GtkCalendar)
+#else
+#define LUNAR_CALENDAR(obj)                 (G_TYPE_CHECK_INSTANCE_CAST ((obj), LUNAR_TYPE_CALENDAR, LunarCalendar))
+#define LUNAR_CALENDAR_CLASS(klass)         (G_TYPE_CHECK_CLASS_CAST ((klass), LUNAR_TYPE_CALENDAR, LunarCalendarClass))
+#define LUNAR_IS_CALENDAR(obj)              (G_TYPE_CHECK_INSTANCE_TYPE ((obj), LUNAR_TYPE_CALENDAR))
+#define LUNAR_IS_CALENDAR_CLASS(klass)      (G_TYPE_CHECK_CLASS_TYPE ((klass), LUNAR_TYPE_CALENDAR))
+#define LUNAR_CALENDAR_GET_CLASS(obj)       (G_TYPE_INSTANCE_GET_CLASS ((obj), LUNAR_TYPE_CALENDAR, LunarCalendarClass))
+
+typedef struct _LunarCalendar                LunarCalendar;
+typedef struct _LunarCalendarClass           LunarCalendarClass;
+typedef struct _LunarCalendarPrivate         LunarCalendarPrivate;
+
+struct _LunarCalendarClass
+{
+       GObjectClass     parent_class;
+};
+GType     lunar_calendar_get_type                   (void) G_GNUC_CONST;
+#endif
 
 GtkWidget*	lunar_calendar_new					(void);
 void		lunar_calendar_set_holiday_rgba		(LunarCalendar *calendar, const GdkRGBA *rgba);
