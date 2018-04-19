@@ -44,7 +44,7 @@ typedef struct _LunarCalendarPrivate         LunarCalendarPrivate;
 
 struct _LunarCalendarClass
 {
-       GObjectClass     parent_class;
+       GtkCalendarClass     parent_class;
 };
 GType     lunar_calendar_get_type                   (void) G_GNUC_CONST;
 #endif

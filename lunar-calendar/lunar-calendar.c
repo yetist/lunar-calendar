@@ -162,7 +162,9 @@ static void lunar_calendar_class_init (LunarCalendarClass *class)
 
 	gobject_class->finalize = lunar_calendar_finalize;
 	gcalendar_class->day_selected = lunar_calendar_day_selected;
+#if GTK_CHECK_VERSION(3, 20, 0)
 	gtk_widget_class_set_css_name (GTK_WIDGET_CLASS(class), "calendar");
+#endif
 }
 
 static void lunar_calendar_init (LunarCalendar *calendar)
