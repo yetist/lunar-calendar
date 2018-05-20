@@ -245,8 +245,10 @@ static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint mont
 	gchar *value, *holiday;
 	LunarCalendar *calendar;
 	gboolean show_detail;
+	guint current_month;
 
 	calendar = LUNAR_CALENDAR(data);
+	g_object_get (calendar, "month", &current_month, NULL);
 	g_object_get (calendar, "show-details", &show_detail, NULL);
 	if (! show_detail)
 		return NULL;
@@ -271,7 +273,24 @@ static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint mont
 	}
 
 	holiday = lunar_date_get_calendar(calendar->date, 3);
-	value = g_strdup_printf("<span size=\"x-small\">%s</span>", holiday);
+	if (current_month == month) {
+		value = g_strdup_printf("<span size=\"x-small\">%s</span>", holiday);
+	} else {
+		GtkStyleContext *context;
+		GtkStateFlags state = 0;
+		GdkRGBA color;
+
+		context = gtk_widget_get_style_context (GTK_WIDGET(calendar));
+		state = gtk_widget_get_state_flags (GTK_WIDGET(calendar));
+		state &= ~(GTK_STATE_FLAG_INCONSISTENT | GTK_STATE_FLAG_ACTIVE | GTK_STATE_FLAG_SELECTED | GTK_STATE_FLAG_DROP_ACTIVE);
+		state |= GTK_STATE_FLAG_INCONSISTENT;
+		gtk_style_context_get_color (context, state, &color);
+		value = g_strdup_printf("<span size=\"x-small\" fgcolor=\"#%02d%02d%02d\">%s</span>",
+				(gint)(color.red * 255),
+				(gint)(color.green * 255),
+				(gint)(color.blue * 255),
+				holiday);
+	}
 	g_free(holiday);
 	return value;
 }
