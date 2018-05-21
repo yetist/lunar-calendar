@@ -239,6 +239,28 @@ void lunar_calendar_set_jieri_color	(LunarCalendar *calendar, const GdkColor *co
 	g_free(spec);
 }
 
+static gchar* widget_color_string(LunarCalendar *widget)
+{
+	GtkStyleContext *context;
+	GtkStateFlags state = 0;
+	GdkRGBA color;
+	gchar *value;
+
+	context = gtk_widget_get_style_context (GTK_WIDGET(widget));
+	state = gtk_widget_get_state_flags (GTK_WIDGET(widget));
+	state &= ~(GTK_STATE_FLAG_INCONSISTENT | GTK_STATE_FLAG_ACTIVE | GTK_STATE_FLAG_SELECTED | GTK_STATE_FLAG_DROP_ACTIVE);
+	state |= GTK_STATE_FLAG_INCONSISTENT;
+	gtk_style_context_get_color (context, state, &color);
+	value = g_strdup_printf("#%02X%02X%02X%02X",
+			(guint)(color.red * 255),
+			(guint)(color.green * 255),
+			(guint)(color.blue * 255),
+			(guint)(color.alpha * 255)
+			);
+	return value;
+}
+
+
 static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint month, guint day, gpointer data)
 {
 	GError *error = NULL;
@@ -276,20 +298,9 @@ static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint mont
 	if (current_month == month) {
 		value = g_strdup_printf("<span size=\"x-small\">%s</span>", holiday);
 	} else {
-		GtkStyleContext *context;
-		GtkStateFlags state = 0;
-		GdkRGBA color;
-
-		context = gtk_widget_get_style_context (GTK_WIDGET(calendar));
-		state = gtk_widget_get_state_flags (GTK_WIDGET(calendar));
-		state &= ~(GTK_STATE_FLAG_INCONSISTENT | GTK_STATE_FLAG_ACTIVE | GTK_STATE_FLAG_SELECTED | GTK_STATE_FLAG_DROP_ACTIVE);
-		state |= GTK_STATE_FLAG_INCONSISTENT;
-		gtk_style_context_get_color (context, state, &color);
-		value = g_strdup_printf("<span size=\"x-small\" fgcolor=\"#%02d%02d%02d\">%s</span>",
-				(gint)(color.red * 255),
-				(gint)(color.green * 255),
-				(gint)(color.blue * 255),
-				holiday);
+		gchar* color = widget_color_string(calendar);
+		value = g_strdup_printf("<span size=\"x-small\" fgcolor=\"%s\">%s</span>", color, holiday);
+		g_free(color);
 	}
 	g_free(holiday);
 	return value;
