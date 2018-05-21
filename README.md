@@ -1,4 +1,4 @@
-# 农历日历部件
+# 农历日历
 
 ![](docs/images/lunar-calendar.png)
 
@@ -17,7 +17,7 @@ sudo ninja -C build install
 编译时启用gtk模块：
 
 ```
-meson build -Dprefix=/usr -Denable_gtk_modules
+meson build -Dprefix=/usr -Denable_gtk_modules=true
 ninja -C build
 sudo ninja -C build install
 ```
