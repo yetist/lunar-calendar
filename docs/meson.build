@@ -33,5 +33,6 @@ gnome.gtkdoc(
 		'--extra-dir=@0@'.format(join_paths(glib_docpath, 'gobject')),
 		'--extra-dir=@0@'.format(join_paths(glib_docpath, 'gio')),
 		],
+	html_assets : 'images/lunar-calendar.png',
 	install : true
 	)
