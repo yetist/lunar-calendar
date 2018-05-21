@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#!/usr/bin/env python
 # -*- encoding:utf-8 -*-
 # FileName: python.py
 
@@ -6,17 +6,29 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('LunarCalendar', '3.0')
-from gi.repository import Gtk as gtk
-from gi.repository import LunarCalendar as calendar
+from gi.repository import Gtk
+from gi.repository import LunarCalendar
+import sys
 
-def main_quit(object, *args):
-    gtk.main_quit()
+class CalWindow(Gtk.ApplicationWindow):
+    def __init__(self, app):
+        Gtk.Window.__init__(self, title="Lunar Calendar", application=app)
+        calendar = LunarCalendar.Calendar()
+        self.add(calendar)
+
+class CalApplication(Gtk.Application):
+
+    def __init__(self):
+        Gtk.Application.__init__(self)
+
+    def do_activate(self):
+        win = CalWindow(self)
+        win.show_all()
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
 
 if __name__ == '__main__':
-    window = gtk.Window()
-    window.connect("hide", main_quit)
-
-    cal = calendar.Calendar()
-    window.add(cal)
-    window.show_all()
-    gtk.main()
+    app = CalApplication()
+    exit_status = app.run(sys.argv)
+    sys.exit(exit_status)

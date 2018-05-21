@@ -10,18 +10,16 @@
 using Gtk;
 using Lunar;
 
-static int main (string[] args) {
-	Gtk.init (ref args);
+public class MyApplication : Gtk.Application {
+	protected override void activate () {
+		var window = new Gtk.ApplicationWindow (this);
+		window.set_title ("Lunar Calendar");
+		var calendar = new Lunar.Calendar ();
+		window.add (calendar);
+		window.show_all ();
+	}
+}
 
-	var window = new Window (WindowType.TOPLEVEL);
-	window.title = "Lunar Calendar";
-	//window.position = WindowPosition.CENTER;
-	window.destroy.connect (Gtk.main_quit);
-
-	var calendar = new Lunar.Calendar ();
-	window.add (calendar);
-	window.show_all ();
-
-	Gtk.main ();
-	return 0;
+public int main (string[] args) {
+	return new MyApplication ().run (args);
 }

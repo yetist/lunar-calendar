@@ -2,6 +2,7 @@ option('with_introspection', type: 'boolean', value : false, description: 'Build
 option('with_vala', type: 'boolean', value: false, description: 'Build to generation vala vapi file')
 option('enable_gtk_doc', type : 'boolean', value : false, description: 'Enable generating the API reference (depends on GTK-Doc)')
 option('enable_tests', type : 'boolean', value : false, description : 'Enable test programs (default: no)')
+option('enable_gtk_modules', type : 'boolean', value : false, description : 'Enable gtk modules.(default: no)')
 
 # For subproject usage
 option('package_subdir', type: 'string',

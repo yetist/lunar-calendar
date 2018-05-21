@@ -1,25 +1,31 @@
 #!/usr/bin/env gjs-console
-const Gettext = imports.gettext;
 const Gtk = imports.gi.Gtk;
 const LunarCalendar = imports.gi.LunarCalendar;
 
-function TestCalendar() {
-  this._init ();
-}
+class Application {
 
-TestCalendar.prototype = {
-  _init: function () {
-    this.window = new Gtk.Window ({title: "Lunar Calendar"});
-    this.window.connect("hide", Gtk.main_quit);
-    this.cal = new LunarCalendar.Calendar();
-    this.window.add(this.cal);
-    this.window.show_all ();
-  }
-}
+    constructor() {
+        this.application = new Gtk.Application();
 
-Gettext.bindtextdomain("lunar-date", "/usr/share/locale");
-Gettext.textdomain("lunar-date");
+        this.application.connect('activate', this._onActivate.bind(this));
+        this.application.connect('startup', this._onStartup.bind(this));
+    }
 
-Gtk.init (null);
-var tc = new TestCalendar();
-Gtk.main ();
+    _buildUI() {
+        this._window = new Gtk.ApplicationWindow({ application: this.application,
+            title: "Lunar Calendar" });
+        this.cal = new LunarCalendar.Calendar();
+        this._window.add(this.cal);
+    }
+
+    _onActivate() {
+        this._window.show_all();
+    }
+
+    _onStartup() {
+        this._buildUI();
+    }
+};
+
+let app = new Application();
+app.application.run(ARGV);

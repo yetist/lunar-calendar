@@ -37,16 +37,6 @@ liblunar_calendar_deps = declare_dependency(sources: source_h,
 cc = meson.get_compiler('c')
 dl_dep = cc.find_library('dl')
 
-liblunar_calendar_preload = shared_library('lunar-calendar-preload-3.0',
-  'lunar-calendar-preload.c',
-  soversion: soversion,
-  version: libversion,
-  dependencies: [gtk_dep, liblunar_calendar_deps, dl_dep],
-  include_directories: top_srcdir,
-  install : true,
-  install_dir : get_option('libdir')
-  )
-
 pkg.generate(
   name: 'lunar-calendar-3.0',
   version: meson.project_version(),

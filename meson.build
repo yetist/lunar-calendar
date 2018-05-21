@@ -151,7 +151,9 @@ top_srcdir = include_directories('.')
 
 subdir('po')
 subdir('lunar-calendar')
+if get_option('enable_gtk_modules')
 subdir('modules')
+endif
 
 if get_option('enable_gtk_doc')
   subdir('docs')
