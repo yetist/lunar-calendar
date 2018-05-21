@@ -10,9 +10,7 @@ ninja -C build
 sudo ninja -C build install
 ```
 
-# 系统日历自动显示农历
-
-仅限于 Gtk3 使用 GtkCalendar 的情况。
+# 日历自动显示农历
 
 编译时启用gtk模块：
 
@@ -27,3 +25,7 @@ sudo ninja -C build install
 ```
 export GTK3_MODULES=lunar-calendar-module
 ```
+
+重新注销、登录系统，会发现所有使用日历的gtk3应用都会自动显示出农历来，如：mate-panel、gtk3-widget-factory等。
+
+Gtk2 应用理论上也是行的，前提是要把 lunar-calendar 编译为 gtk2 的。
