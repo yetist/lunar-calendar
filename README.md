@@ -10,6 +10,8 @@ ninja -C build
 sudo ninja -C build install
 ```
 
+编译依赖于 [LunarDate](https://github.com/yetist/lunar-date)， 更多编译选项见 [meson_options.txt](meson_options.txt)。
+
 # 日历自动显示农历
 
 编译时启用gtk模块：
