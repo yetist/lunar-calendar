@@ -20,6 +20,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <lunar-calendar/lunar-calendar.h>
@@ -34,6 +37,14 @@ static GObject* hijacked_calendar_constructor(GType type,
 					      GObjectConstructParam *construct_params)
 {
 	GObject *object;
+	static gboolean _lunar_calendar_gettext_initialized = FALSE;
+
+	if (!_lunar_calendar_gettext_initialized)
+	{
+		bindtextdomain (GETTEXT_PACKAGE, LUNAR_CALENDAR_LOCALEDIR);
+		bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+		_lunar_calendar_gettext_initialized = TRUE;
+	}
 
 	type = lunar_calendar_get_type();
 	object = (*pre_hijacked_calendar_constructor)(type, n_construct_properties, construct_params);
