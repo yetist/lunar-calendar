@@ -1,4 +1,4 @@
-# 农历日历
+# 农历日历 [![Build Status](https://travis-ci.org/yetist/lunar-calendar.svg?branch=master)](https://travis-ci.org/yetist/lunar-calendar)
 
 ![](docs/images/lunar-calendar.png)
 
