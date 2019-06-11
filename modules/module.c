@@ -23,6 +23,7 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+#include <libintl.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <lunar-calendar/lunar-calendar.h>
