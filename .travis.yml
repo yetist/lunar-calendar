@@ -28,9 +28,9 @@ deploy:
 
 env:
   - DISTRO="archlinux/base"
-  - DISTRO="debian:sid"
+    #- DISTRO="debian:sid"
   - DISTRO="fedora:rawhide"
-  - DISTRO="ubuntu:19.04"
+    #- DISTRO="ubuntu:19.04"
 
 ##########################################################
 # THE FOLLOWING LINES IS USED BY docker-build
