@@ -160,7 +160,8 @@ static void lunar_calendar_day_selected(GtkCalendar *gcalendar)
 
 	gtk_widget_set_tooltip_markup(GTK_WIDGET(gcalendar), strtime);
 	g_free(strtime);
-    g_signal_emit (calendar, calendar_signals[ACTIVATE], 0);
+    if (year > 0 && month > 0 && day > 0)
+        g_signal_emit (calendar, calendar_signals[ACTIVATE], 0);
 }
 
 static void lunar_calendar_class_init (LunarCalendarClass *klass)
