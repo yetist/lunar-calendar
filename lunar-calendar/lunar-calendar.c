@@ -4,17 +4,17 @@
  *
  * Copyright (C) 2009 yetist <yetist@gmail.com>
  *
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * */
@@ -39,6 +39,7 @@
  */
 
 enum {
+    ACTIVATE,
 	LAST_SIGNAL
 };
 
@@ -46,15 +47,17 @@ enum {
 	PROP_0,
 };
 
-struct _LunarCalendar
+typedef struct _LunarCalendarPrivate  LunarCalendarPrivate;
+struct _LunarCalendarPrivate
 {
 	GtkCalendar object;
 	LunarDate   *date;
 	GdkRGBA     *rgba;
 };
 
+static guint calendar_signals[LAST_SIGNAL] = { 0 };
 static void lunar_calendar_init_i18n(void);
-static void  lunar_calendar_day_selected(GtkCalendar *gcalendar);
+static void lunar_calendar_day_selected(GtkCalendar *gcalendar);
 
 static gchar* calendar_detail_cb (GtkCalendar *gcalendar,
 		guint        year,
@@ -62,7 +65,7 @@ static gchar* calendar_detail_cb (GtkCalendar *gcalendar,
 		guint        day,
 		gpointer     data);
 
-G_DEFINE_TYPE (LunarCalendar, lunar_calendar, GTK_TYPE_CALENDAR);
+G_DEFINE_TYPE_WITH_PRIVATE (LunarCalendar, lunar_calendar, GTK_TYPE_CALENDAR);
 
 static gchar *color_to_string (const GdkColor *color)
 {
@@ -89,27 +92,31 @@ static gchar *rgba_to_string (const GdkRGBA *rgba)
 static void lunar_calendar_finalize (GObject *gobject)
 {
 	LunarCalendar *calendar;
+	LunarCalendarPrivate *priv;
 
 	calendar = LUNAR_CALENDAR (gobject);
+    priv = lunar_calendar_get_instance_private (calendar);
 
-	if (calendar->date != NULL)
+	if (priv->date != NULL)
 	{
-		lunar_date_free(calendar->date);
+		lunar_date_free(priv->date);
 	}
 
-	if (calendar->rgba != NULL)
-		gdk_rgba_free(calendar->rgba);
+	if (priv->rgba != NULL)
+		gdk_rgba_free(priv->rgba);
 	G_OBJECT_CLASS (lunar_calendar_parent_class)->finalize(gobject);
 }
 
-static void  lunar_calendar_day_selected(GtkCalendar *gcalendar)
+static void lunar_calendar_day_selected(GtkCalendar *gcalendar)
 {
 	guint year, month, day;
 	GError *error = NULL;
 	LunarCalendar *calendar;
+	LunarCalendarPrivate *priv;
 	gchar *holiday, *format, *strtime, *color;
 
 	calendar = LUNAR_CALENDAR(gcalendar);
+    priv = lunar_calendar_get_instance_private (calendar);
 
 	if (getenv("LUNAR_CALENDAR_IGNORE_NON_CHINESE") != NULL)
 	{
@@ -123,14 +130,14 @@ static void  lunar_calendar_day_selected(GtkCalendar *gcalendar)
 	}
 
 	gtk_calendar_get_date(gcalendar, &year, &month, &day);
-	lunar_date_set_solar_date(calendar->date, year, month + 1, day, 3, &error);
+	lunar_date_set_solar_date(priv->date, year, month + 1, day, 3, &error);
 	if (error != NULL) {
 		g_clear_error (&error);
 		return;
 	}
 
-	color = rgba_to_string(calendar->rgba);
-	holiday = lunar_date_get_holiday(calendar->date, "\n");
+	color = rgba_to_string(priv->rgba);
+	holiday = lunar_date_get_holiday(priv->date, "\n");
 	if (holiday != NULL) {
 		format = g_strdup_printf("%s\n%s\n%s\n%s\n<span color=\"%s\">%s</span>",
 				_("%(year)-%(month)-%(day)"),
@@ -146,34 +153,61 @@ static void  lunar_calendar_day_selected(GtkCalendar *gcalendar)
 				_("%(Y60)nian%(M60)yue%(D60)ri"),
 				_("shengxiao: %(shengxiao)"));
 	}
-	strtime = lunar_date_strftime(calendar->date, format);
+	strtime = lunar_date_strftime(priv->date, format);
 	g_free(color);
 	g_free(holiday);
 	g_free(format);
 
 	gtk_widget_set_tooltip_markup(GTK_WIDGET(gcalendar), strtime);
 	g_free(strtime);
+    g_signal_emit (calendar, calendar_signals[ACTIVATE], 0);
 }
 
-static void lunar_calendar_class_init (LunarCalendarClass *class)
+static void lunar_calendar_class_init (LunarCalendarClass *klass)
 {
-	GObjectClass *gobject_class = G_OBJECT_CLASS (class);
-	GtkCalendarClass *gcalendar_class = GTK_CALENDAR_CLASS (class);
+	GObjectClass *gobject_class;
+    GtkWidgetClass *widget_class;
+	GtkCalendarClass *gcalendar_class;
+
+	gobject_class = G_OBJECT_CLASS (klass);
+    widget_class = GTK_WIDGET_CLASS (klass);
+	gcalendar_class = GTK_CALENDAR_CLASS (klass);
 
 	gobject_class->finalize = lunar_calendar_finalize;
 	gcalendar_class->day_selected = lunar_calendar_day_selected;
 #if GTK_CHECK_VERSION(3, 20, 0)
-	gtk_widget_class_set_css_name (GTK_WIDGET_CLASS(class), "calendar");
+	gtk_widget_class_set_css_name (widget_class, "calendar");
 #endif
+
+    /**
+     * LunarCalendar::activate:
+     * @widget: the object which received the signal.
+     *
+     * The ::activate signal on LunarCalendar is an action signal and
+     * emitting it causes the calendar selected day.
+     * Applications should never connect to this signal, but use the
+     * #LunarCalendar::activate signal.
+     */
+    calendar_signals[ACTIVATE] =
+        g_signal_new ("activate",
+                G_OBJECT_CLASS_TYPE (gobject_class),
+                G_SIGNAL_RUN_FIRST | G_SIGNAL_ACTION,
+                G_STRUCT_OFFSET (LunarCalendarClass, activate),
+                NULL, NULL,
+                NULL,
+                G_TYPE_NONE, 0);
 }
 
 static void lunar_calendar_init (LunarCalendar *calendar)
 {
 	GdkRGBA rgba;
+	LunarCalendarPrivate *priv;
 
-	calendar->date = lunar_date_new();
+    priv = lunar_calendar_get_instance_private (calendar);
+
+	priv->date = lunar_date_new();
 	gdk_rgba_parse(&rgba, "blue");
-	calendar->rgba = gdk_rgba_copy(&rgba);
+	priv->rgba = gdk_rgba_copy(&rgba);
 
 	/* FIXME: here we can setup the locale info, but it looks like not a good idea */
 	lunar_calendar_init_i18n();
@@ -184,9 +218,9 @@ static void lunar_calendar_init (LunarCalendar *calendar)
 
 /**
  * lunar_calendar_new:
- * 
- * Creates a new lunar calendar, with the current date being selected. 
- * 
+ *
+ * Creates a new lunar calendar, with the current date being selected.
+ *
  * Return value: a newly #LunarCalendar widget
  **/
 GtkWidget* lunar_calendar_new (void)
@@ -204,13 +238,16 @@ GtkWidget* lunar_calendar_new (void)
  **/
 void lunar_calendar_set_holiday_rgba (LunarCalendar *calendar, const GdkRGBA *rgba)
 {
-	if (calendar->rgba != NULL) {
-		if (gdk_rgba_equal ((gconstpointer) calendar->rgba, (gconstpointer) rgba)) {
+	LunarCalendarPrivate *priv;
+
+    priv = lunar_calendar_get_instance_private (calendar);
+	if (priv->rgba != NULL) {
+		if (gdk_rgba_equal ((gconstpointer) priv->rgba, (gconstpointer) rgba)) {
 			return;
 		}
-		gdk_rgba_free(calendar->rgba);
+		gdk_rgba_free(priv->rgba);
 	}
-	calendar->rgba = gdk_rgba_copy (rgba);
+	priv->rgba = gdk_rgba_copy (rgba);
 	gtk_widget_queue_draw(GTK_WIDGET(calendar));
 }
 
@@ -266,16 +303,19 @@ static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint mont
 	GError *error = NULL;
 	gchar *value, *holiday;
 	LunarCalendar *calendar;
+	LunarCalendarPrivate *priv;
 	gboolean show_detail;
 	guint current_month;
 
 	calendar = LUNAR_CALENDAR(data);
+
+    priv = lunar_calendar_get_instance_private (calendar);
 	g_object_get (calendar, "month", &current_month, NULL);
 	g_object_get (calendar, "show-details", &show_detail, NULL);
 	if (! show_detail)
 		return NULL;
 
-	lunar_date_set_solar_date(calendar->date, year, month + 1, day, 0, &error);
+	lunar_date_set_solar_date(priv->date, year, month + 1, day, 0, &error);
 	if (error != NULL)
 	{
 		g_clear_error (&error);
@@ -294,7 +334,7 @@ static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint mont
 			}
 	}
 
-	holiday = lunar_date_get_calendar(calendar->date, 3);
+	holiday = lunar_date_get_calendar(priv->date, 3);
 	if (current_month == month) {
 		value = g_strdup_printf("<span size=\"x-small\">%s</span>", holiday);
 	} else {
