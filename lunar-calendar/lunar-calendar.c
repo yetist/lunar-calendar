@@ -106,6 +106,20 @@ static void lunar_calendar_finalize (GObject *gobject)
 	G_OBJECT_CLASS (lunar_calendar_parent_class)->finalize(gobject);
 }
 
+static gboolean locale_is_chinese (void)
+{
+    gboolean chinese = FALSE;
+
+    const gchar* const * langs =  g_get_language_names();
+
+    if (langs[0] && langs[0][0] != '\0') {
+        if (g_str_has_prefix(langs[0], "zh_")) {
+            chinese = TRUE;
+        }
+    }
+    return chinese;
+}
+
 static void lunar_calendar_day_selected(GtkCalendar *gcalendar)
 {
 	guint year, month, day;
@@ -119,14 +133,14 @@ static void lunar_calendar_day_selected(GtkCalendar *gcalendar)
 
 	if (getenv("LUNAR_CALENDAR_IGNORE_NON_CHINESE") != NULL)
 	{
-		const gchar* const * langs =  g_get_language_names();
-
-		if (langs[0] && langs[0][0] != '\0')
-			if (!g_str_has_prefix(langs[0], "zh_")) {
-				g_object_set (gcalendar, "show-details", FALSE, NULL);
-				return;
-			}
-	}
+        if (!locale_is_chinese ())
+        {
+            g_object_set (gcalendar, "show-details", FALSE, NULL);
+            return;
+        }
+	} else {
+        g_object_set (gcalendar, "show-details", TRUE, NULL);
+    }
 
 	gtk_calendar_get_date(gcalendar, &year, &month, &day);
 	lunar_date_set_solar_date(priv->date, year, month + 1, day, 3, &error);
@@ -324,14 +338,10 @@ static gchar* calendar_detail_cb (GtkCalendar *gcalendar, guint year, guint mont
 
 	if (getenv("LUNAR_CALENDAR_IGNORE_NON_CHINESE") != NULL)
 	{
-		const gchar* const * langs =  g_get_language_names();
-
-		if (langs[0] && langs[0][0] != '\0')
-			if (!g_str_has_prefix(langs[0], "zh_"))
-			{
-				g_object_set (calendar, "show-details", FALSE, NULL);
-				return NULL;
-			}
+        if (!locale_is_chinese ()) {
+            g_object_set (calendar, "show-details", FALSE, NULL);
+            return NULL;
+        }
 	}
 
 	holiday = lunar_date_get_calendar(priv->date, 3);
