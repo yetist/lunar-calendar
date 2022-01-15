@@ -1,8 +1,8 @@
 /* vi: set sw=4 ts=4 wrap ai: */
 /*
- * module.c: This file is part of ____
+ * module.c: This file is part of lunar-calendar.
  *
- * Copyright (C) 2018 yetist <yetist@yetibook>
+ * Copyright (C) 2018-2022 yetist <yetist@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -2,7 +2,7 @@
 /*
  * lunar-version.c: This file is part of lunar-calendar.
  *
- * Copyright (C) 2009-2016 yetist <yetist@gmail.com>
+ * Copyright (C) 2009-2022 yetist <yetist@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
