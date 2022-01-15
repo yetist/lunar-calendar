@@ -47,7 +47,7 @@ pkg.generate(
   subdirs: 'lunar-calendar-3.0',
   )
 
-if get_option('with_introspection')
+if get_option('introspection')
   liblunar_calendar_gir = gnome.generate_gir(liblunar_calendar,
     sources: [source_h, source_c],
     nsversion : api_version,
@@ -61,7 +61,7 @@ if get_option('with_introspection')
     install_dir_typelib: typelibdir,
     extra_args: [ '--c-include=lunar-calendar/lunar-calendar.h' ],
     )
-  if get_option('with_vala')
+  if get_option('vapi')
     lunar_date_vapi = gnome.generate_vapi('lunar-calendar-' + api_version,
       sources: liblunar_calendar_gir[0],
       packages: ['gtk+-3.0', 'lunar-date-3.0'],

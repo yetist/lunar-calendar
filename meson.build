@@ -1,7 +1,7 @@
 project('lunar-calendar', 'c',
   version : '3.0.0',
   license : 'LGPLv2.1+',
-  meson_version : '>=0.40.1',
+  meson_version : '>=0.46.0',
   default_options : [ 'warning_level=1', 'buildtype=debugoptimized', 'c_std=gnu11'],
   )
 
@@ -42,7 +42,6 @@ test_args = [
   '-Wclobbered',
   '-Wdeclaration-after-statement',
   '-Wempty-body',
-  '-Wextra',
   '-Wformat=2',
   '-Wformat-nonliteral',
   '-Wformat-security',
@@ -151,14 +150,12 @@ top_srcdir = include_directories('.')
 
 subdir('po')
 subdir('lunar-calendar')
-if get_option('enable_gtk_modules')
 subdir('modules')
-endif
 
-if get_option('enable_gtk_doc')
+if get_option('docs')
   subdir('docs')
 endif
 
-if get_option('enable_tests')
+if get_option('tests')
   subdir('tests')
 endif
