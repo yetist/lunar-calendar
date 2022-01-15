@@ -1,5 +1,5 @@
 project('lunar-calendar', 'c',
-  version : '3.0.0',
+  version : '3.0.1',
   license : 'LGPLv2.1+',
   meson_version : '>=0.46.0',
   default_options : [ 'warning_level=1', 'buildtype=debugoptimized', 'c_std=gnu11'],
@@ -96,7 +96,7 @@ test_link_args = [
   '-Wl,-z,now',
   ]
 foreach arg: test_link_args
-  if cc.has_argument(arg)
+  if cc.has_link_argument(arg)
     global_link_args += arg
   endif
 endforeach
