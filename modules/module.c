@@ -27,11 +27,11 @@
 #include <lunar-calendar/lunar-calendar.h>
 
 void gtk_module_init(gint *argc, gchar ***argv);
-static GObject* (*pre_hijacked_calendar_constructor)(GType type,
+static GObject* (*pre_hijacked_calendar_constructor) (GType type,
 						     guint n_construct_properties,
 						     GObjectConstructParam *construct_params);
 
-static GObject* hijacked_calendar_constructor(GType type,
+static GObject* hijacked_calendar_constructor (GType type,
 					      guint n_construct_properties,
 					      GObjectConstructParam *construct_params)
 {
@@ -45,18 +45,18 @@ static GObject* hijacked_calendar_constructor(GType type,
 		_lunar_calendar_gettext_initialized = TRUE;
 	}
 
-	type = lunar_calendar_get_type();
-	object = (*pre_hijacked_calendar_constructor)(type, n_construct_properties, construct_params);
+	type = lunar_calendar_get_type ();
+	object = (*pre_hijacked_calendar_constructor) (type, n_construct_properties, construct_params);
 
 	return object;
 }
 
 G_MODULE_EXPORT
-void gtk_module_init(gint *argc, gchar ***argv)
+void gtk_module_init (gint *argc, gchar ***argv)
 {
 	GObjectClass *calendar_class;
 
-	calendar_class = g_type_class_ref(GTK_TYPE_CALENDAR);
+	calendar_class = g_type_class_ref (GTK_TYPE_CALENDAR);
 	pre_hijacked_calendar_constructor = calendar_class->constructor;
 	calendar_class->constructor = hijacked_calendar_constructor;
 }

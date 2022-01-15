@@ -86,8 +86,8 @@ extern const guint lunar_calendar_minor_version;
 extern const guint lunar_calendar_micro_version;
 
 const gchar * lunar_calendar_check_version (guint required_major,
-		guint required_minor,
-		guint required_micro);
+                                            guint required_minor,
+                                            guint required_micro);
 
 /**
  * LUNAR_CALENDAR_CHECK_VERSION:

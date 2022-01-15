@@ -61,7 +61,3 @@ void		lunar_calendar_set_jieri_color		(LunarCalendar *calendar, const GdkColor *
 G_END_DECLS
 
 #endif /* __LUNAR_CALENDAR_H__ */
-
-/*
-vi:ts=4:wrap:ai:
-*/

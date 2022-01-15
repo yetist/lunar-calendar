@@ -30,8 +30,8 @@
  * @include: lunar-calendar/lunar-calendar-version.h
  * @stability: Stable
  *
- * LunarCalendar provides version information, primarily useful in 
- * configure checks for builds that have a configure script. 
+ * LunarCalendar provides version information, primarily useful in
+ * configure checks for builds that have a configure script.
  * Applications will not typically use the features described here.
  */
 
@@ -68,8 +68,8 @@ const guint lunar_calendar_micro_version = LUNAR_CALENDAR_MICRO_VERSION;
  * Since: 2.4.0
  **/
 const gchar * lunar_calendar_check_version (guint required_major,
-        guint required_minor,
-        guint required_micro)
+                                            guint required_minor,
+                                            guint required_micro)
 {
     gint lunar_effective_micro = 100 * LUNAR_CALENDAR_MINOR_VERSION + LUNAR_CALENDAR_MICRO_VERSION;
     gint required_effective_micro = 100 * required_minor + required_micro;
@@ -84,7 +84,3 @@ const gchar * lunar_calendar_check_version (guint required_major,
         return "LunarCalendar version too old (micro mismatch)";
     return NULL;
 }
-
-/*
-vi:ts=4:wrap:ai:expandtab
-*/
