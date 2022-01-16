@@ -25,7 +25,14 @@ sudo ninja -C build install
 新建文件 `/etc/X11/xinit/xinitrc.d/70-lunar-calendar.sh` ，并增加可执行权限， 内容为：
 
 ```
-export GTK3_MODULES=lunar-calendar-module
+#!/bin/bash
+if [ -z "$GTK3_MODULES" ] ; then
+    GTK3_MODULES="lunar-calendar-module"
+else
+    GTK3_MODULES="$GTK3_MODULES:lunar-calendar-module"
+fi
+
+export GTK3_MODULES
 ```
 
 重新注销、登录系统，会发现所有使用日历的 GTK3 应用都会自动显示出农历来，如：mate-panel、gtk3-widget-factory等等。
