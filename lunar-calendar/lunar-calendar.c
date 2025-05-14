@@ -19,7 +19,7 @@
  * @Short_description: Chinese Lunar Calendar widget for GTK+
  * @Title: LunarCalendar
  *
- * The #LunarCalendar provide Chinese lunar Calendar Wieget for GTK+ .
+ * The `LunarCalendar` provide Chinese lunar Calendar Wieget for GTK+ .
  */
 
 enum {
@@ -202,7 +202,6 @@ static void lunar_calendar_init (LunarCalendar *calendar)
     gdk_rgba_parse (&rgba, "blue");
     priv->rgba = gdk_rgba_copy (&rgba);
 
-    /* FIXME: here we can setup the locale info, but it looks like not a good idea */
     lunar_calendar_init_i18n ();
 
     if (gtk_calendar_get_display_options (GTK_CALENDAR(calendar)) & GTK_CALENDAR_SHOW_DETAILS)
@@ -214,7 +213,7 @@ static void lunar_calendar_init (LunarCalendar *calendar)
  *
  * Creates a new lunar calendar, with the current date being selected.
  *
- * Return value: a newly #LunarCalendar widget
+ * Return value: a newly `LunarCalendar` widget
  **/
 GtkWidget* lunar_calendar_new (void)
 {
@@ -223,7 +222,7 @@ GtkWidget* lunar_calendar_new (void)
 
 /**
  * lunar_calendar_set_holiday_rgba:
- * @calendar: a #LunarCalendar
+ * @calendar: a `LunarCalendar`
  * @rgba: the holiday rgba.
  *
  * Setup the holiday color.
@@ -246,7 +245,7 @@ void lunar_calendar_set_holiday_rgba (LunarCalendar *calendar, const GdkRGBA *rg
 
 /**
  * lunar_calendar_set_jieri_color:
- * @calendar: a #LunarCalendar
+ * @calendar: a `LunarCalendar`
  * @color: the holiday color.
  *
  * Setup the holiday(jieri) color.

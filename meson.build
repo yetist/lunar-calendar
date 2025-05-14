@@ -111,6 +111,7 @@ lunar_date_req_version = '>= 3.0.0'
 gtk_dep = dependency('gtk+-3.0', version: gtk_req_version)
 lunar_date_dep = dependency('lunar-date-3.0', version: lunar_date_req_version)
 
+prefix = get_option('prefix')
 # Configure data
 conf = configuration_data()
 conf.set('LUNAR_CALENDAR_MAJOR_VERSION', lunar_calendar_version_major)
@@ -140,6 +141,7 @@ package_subdir = get_option('package_subdir')
 girdir = join_paths(get_option('datadir'), package_subdir, 'gir-1.0')
 typelibdir = join_paths(get_option('libdir'), package_subdir, 'girepository-1.0')
 libdir = join_paths(get_option('libdir'), package_subdir)
+datadir = join_paths(prefix, get_option('datadir'))
 if package_subdir != ''
   vapidir = join_paths(get_option('datadir'), package_subdir, 'vapi')
 else

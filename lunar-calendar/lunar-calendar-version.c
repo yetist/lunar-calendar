@@ -32,7 +32,7 @@ const guint lunar_calendar_micro_version = LUNAR_CALENDAR_MICRO_VERSION;
  *
  * Checks that the LunarCalendar library in use is compatible with the
  * given version. Generally you would pass in the constants
- * #LUNAR_CALENDAR_MAJOR_VERSION, #LUNAR_CALENDAR_MINOR_VERSION, #LUNAR_CALENDAR_MICRO_VERSION
+ * %LUNAR_CALENDAR_MAJOR_VERSION, %LUNAR_CALENDAR_MINOR_VERSION, %LUNAR_CALENDAR_MICRO_VERSION
  * as the three arguments to this function; that produces
  * a check that the library in use is compatible with
  * the version of LunarCalendar the application or module was compiled
