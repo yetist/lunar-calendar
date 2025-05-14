@@ -171,9 +171,7 @@ static void lunar_calendar_class_init (LunarCalendarClass *klass)
 
     gobject_class->finalize = lunar_calendar_finalize;
     gcalendar_class->day_selected = lunar_calendar_day_selected;
-#if GTK_CHECK_VERSION(3, 20, 0)
     gtk_widget_class_set_css_name (widget_class, "calendar");
-#endif
 
     /**
      * LunarCalendar::activate:
@@ -254,7 +252,7 @@ void lunar_calendar_set_holiday_rgba (LunarCalendar *calendar, const GdkRGBA *rg
  * Setup the holiday(jieri) color.
  *
  **/
-void lunar_calendar_set_jieri_color	(LunarCalendar *calendar, const GdkColor *color)
+void lunar_calendar_set_jieri_color (LunarCalendar *calendar, const GdkColor *color)
 {
     gchar *spec;
     GdkRGBA rgba;
@@ -344,12 +342,11 @@ static void lunar_calendar_init_i18n (void)
 {
     static gboolean _lunar_calendar_gettext_initialized = FALSE;
 
-    if (!_lunar_calendar_gettext_initialized)
-        {
+    if (!_lunar_calendar_gettext_initialized) {
         bindtextdomain (GETTEXT_PACKAGE, LUNAR_CALENDAR_LOCALEDIR);
 #ifdef HAVE_BIND_TEXTDOMAIN_CODESET
         bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
 #endif
         _lunar_calendar_gettext_initialized = TRUE;
-        }
+    }
 }

@@ -16,15 +16,15 @@ G_BEGIN_DECLS
 G_DECLARE_DERIVABLE_TYPE (LunarCalendar, lunar_calendar, LUNAR, CALENDAR, GtkCalendar)
 struct _LunarCalendarClass
 {
-       GtkCalendarClass     parent_class;
-       void (*activate)     (LunarCalendar *calendar);
+    GtkCalendarClass     parent_class;
+    void (*activate)     (LunarCalendar *calendar);
 };
 
-GtkWidget*	lunar_calendar_new					(void);
-void		lunar_calendar_set_holiday_rgba		(LunarCalendar *calendar, const GdkRGBA *rgba);
+GtkWidget*      lunar_calendar_new                      (void);
+void            lunar_calendar_set_holiday_rgba         (LunarCalendar *calendar, const GdkRGBA *rgba);
 
 GLIB_DEPRECATED_FOR(lunar_calendar_set_holiday_rgba)
-void		lunar_calendar_set_jieri_color		(LunarCalendar *calendar, const GdkColor *color);
+void            lunar_calendar_set_jieri_color          (LunarCalendar *calendar, const GdkColor *color);
 
 G_END_DECLS
 
