@@ -4,10 +4,10 @@
 
 ## 编译安装
 
-```
-meson build -Dprefix=/usr
-ninja -C build
-sudo ninja -C build install
+```sh
+$ meson setup _build --prefix=/usr -Ddocs=true -Dintrospection=true -Dvapi=true -Dtests=true
+$ meson compile -C _build/
+$ sudo meson install -C _build
 ```
 
 编译依赖于 [LunarDate](https://github.com/yetist/lunar-date)， 更多编译选项见 [meson_options.txt](meson_options.txt)。
@@ -22,9 +22,9 @@ sudo ninja -C build install
 
 不同发行版 Xorg 启动时的脚本路径不同，在 Archlinux 上可如下设置：
 
-新建文件 `/etc/X11/xinit/xinitrc.d/70-lunar-calendar.sh` ，并增加可执行权限， 内容为：
+新建文件 `/etc/profile.d/70-lunar-calendar.sh` ，并增加可执行权限， 内容为：
 
-```
+```sh
 #!/bin/bash
 if [ -z "$GTK3_MODULES" ] ; then
     GTK3_MODULES="lunar-calendar-module"
@@ -35,7 +35,7 @@ fi
 export GTK3_MODULES
 ```
 
-重新注销、登录系统，会发现所有使用日历的 GTK3 应用都会自动显示出农历来，如：mate-panel、gtk3-widget-factory等等。
+重新注销、登录系统，会发现原来使用日历的 GTK3 应用都会自动显示出农历来，如：mate-panel、gtk3-widget-factory等等。
 
 2. **非中文环境不想显示拼音怎么办?**
 
