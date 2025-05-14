@@ -1,6 +1,8 @@
 #!/usr/bin/env gjs-console
-const Gtk = imports.gi.Gtk;
-const LunarCalendar = imports.gi.LunarCalendar;
+
+imports.gi.versions.Gtk = "3.0";
+const { Gtk } = imports.gi;
+const { LunarCalendar } = imports.gi;
 
 class Application {
 

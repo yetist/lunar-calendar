@@ -1,11 +1,4 @@
-/*
- * compilation:
- * valac --pkg lunar-calendar-3.0 calendar.vala
- *
- * configure:
- * $ ./configure --enable-vala-bindings ...
- *
- */
+#!/usr/bin/env -S vala --pkg lunar-calendar-3.0
 
 using Gtk;
 using Lunar;
