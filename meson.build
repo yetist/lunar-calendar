@@ -1,7 +1,7 @@
 project('lunar-calendar', 'c',
   version : '3.1.0',
   license : 'LGPLv2.1+',
-  meson_version : '>=0.46.0',
+  meson_version : '>=0.60.0',
   default_options : [ 'warning_level=1', 'buildtype=debugoptimized', 'c_std=gnu11'],
   )
 
@@ -30,7 +30,7 @@ libversion = '@0@.@1@.@2@'.format(soversion, current, revision)
 # Compiler & Project arguments
 add_project_arguments([
   '-DHAVE_CONFIG_H',
-  '-I' + meson.build_root(),
+  '-I' + meson.project_build_root(),
   ], language: 'c')
 
 # get suported warning flags
