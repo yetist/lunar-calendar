@@ -107,7 +107,7 @@ add_global_link_arguments(
 
 # Dependencies
 gtk_req_version = '>= 3.0.0'
-lunar_date_req_version = '>= 2.9.0'
+lunar_date_req_version = '>= 3.0.0'
 gtk_dep = dependency('gtk+-3.0', version: gtk_req_version)
 lunar_date_dep = dependency('lunar-date-3.0', version: lunar_date_req_version)
 
